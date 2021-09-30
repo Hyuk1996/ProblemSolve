@@ -72,3 +72,43 @@ vector<int> solution(string s) {
     
     return answer;
 }
+
+
+// 다른 풀이법.
+#include <string>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+bool cmp(pair<int, int> a, pair<int, int> b){
+    return a.second > b.second;
+}
+vector<int> solution(string s) {
+    int count[100001] = {0,};
+    
+    string tmp;
+    for(int i=0; i<s.size(); i++){
+        if('0' <= s[i] && s[i] <= '9')
+            tmp += s[i];
+        else
+            if(!tmp.empty()){
+                count[stoi(tmp)]++;
+                tmp.clear();
+            }
+    }
+    
+    vector<pair<int, int>> v;
+    for(int i=0; i<100001; i++){
+        if(count[i]){
+            v.push_back(make_pair(i, count[i]));
+        }
+    }
+    sort(v.begin(), v.end(), cmp);
+    vector<int> answer;
+    for(int i=0; i<v.size(); i++)
+        answer.push_back(v[i].first);
+    
+    
+    return answer;
+}
