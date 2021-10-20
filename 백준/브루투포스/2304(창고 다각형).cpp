@@ -55,3 +55,43 @@ int main(){
     cout << ans;
 
 }
+
+// 새로운 접근 방식.
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main(){
+    // 입력 받기.
+    int N;
+    cin >> N;
+
+    vector<vector<int>> v(1001, vector<int>(3, 0));
+    for(int i=0; i<N; i++){
+        int x;
+        int y;
+        cin >> x;
+        cin >> y;
+        v[x][0] = y;
+    }
+    // 왼 -> 오른쪽
+    int max_value = -1;
+    for(int i=1; i<=1000; i++){
+        max_value = max(max_value, v[i][0]);
+        v[i][1] = max_value;
+    }
+
+    // 오른쪽 -> 왼쪽
+    max_value = -1;
+    for(int i=1000; i>=0; i--){
+        max_value = max(max_value, v[i][0]);
+        v[i][2] = max_value;
+    }
+
+    // 정답 도출
+    int ans = 0;
+    for(int i=1; i<=1000; i++)
+        ans += min(v[i][1], v[i][2]);
+    cout << ans;
+}
