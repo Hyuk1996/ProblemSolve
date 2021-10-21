@@ -34,3 +34,39 @@ int main(){
     int answer = dfs(S, 0);
     cout << answer << '\n';
 }
+
+// stack 이용하 풀이.
+#include <iostream>
+#include <stack>
+using namespace std;
+
+int main(){
+    // 입력.
+    string S;
+    cin >> S;
+
+    // stack을 이용해 압축 해제 문자열 길이 저장.
+    stack<pair<char, int>> st;
+    for(int i=0; i<S.size(); i++){
+        if(S[i] == ')'){
+            int Q = 0;
+            while(st.top().first != '('){
+                Q += st.top().second;
+                st.pop();
+            }
+            st.pop();
+            int K = st.top().first - '0';
+            st.top().second = Q * K;
+        }
+        else
+            st.push(make_pair(S[i], 1));
+    }
+
+    // 출력.
+    int ans = 0;
+    while(!st.empty()) {
+        ans += st.top().second;
+        st.pop();
+    }
+    cout << ans << '\n';
+}
