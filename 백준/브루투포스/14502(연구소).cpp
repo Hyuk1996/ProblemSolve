@@ -57,22 +57,16 @@ void getCombi(vector<vector<int>>& lab, int r, int c, int depth, int& answer){
         r++;
     }
     for(int i=r; i<lab.size(); i++){
-        if(i == r) {
-            for (int j = c; j < lab[i].size(); j++) {
-                if (lab[i][j] == 0) {
-                    lab[i][j] = 1;
-                    getCombi(lab, i, j + 1, depth + 1, answer);
-                    lab[i][j] = 0;
-                }
-            }
-        }
-        else{
-            for (int j = 0; j < lab[i].size(); j++) {
-                if (lab[i][j] == 0) {
-                    lab[i][j] = 1;
-                    getCombi(lab, i, j + 1, depth + 1, answer);
-                    lab[i][j] = 0;
-                }
+        int start;
+        if(i == r)
+            start = c;
+        else
+            start = 0;
+        for (int j = start; j < lab[i].size(); j++) {
+            if (lab[i][j] == 0) {
+                lab[i][j] = 1;
+                getCombi(lab, i, j + 1, depth + 1, answer);
+                lab[i][j] = 0;
             }
         }
     }
