@@ -49,3 +49,38 @@ int main(){
 
     return 0;
 }
+
+// 2중 for문 이용해 깔끔한 코드.
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main(){
+    // 입력.
+    int N, K;
+    cin >> N >> K;
+    vector<bool> prime(N+1, 0);
+
+    // 에라토스테네스의 체
+    int ans = -1;
+    for(int i=2; i<=N; i++){
+        if(prime[i])
+            continue;
+        for(int j=i; j<=N; j+=i){
+            if(prime[j])
+                continue;
+            prime[j] = true;
+            K--;
+            if(K == 0) {
+                ans = j;
+                break;
+            }
+        }
+        if(K == 0)
+            break;
+    }
+
+    // 출력.
+    cout << ans;
+    return 0;
+}
