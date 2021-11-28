@@ -76,3 +76,75 @@ int main(){
         cout << total_MST_weight;
     return 0;
 }
+
+
+#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+struct cmp{
+    bool operator () (const pair<int, int>& a, const pair<int, int>& b){
+        return a.second > b.second; // 가중치 기준 min heap
+    }
+};
+
+int main(){
+    // 정점, 간선 수 입력받기.
+    int N, M;
+    cin >> N >> M;
+
+    // 정점들 정보 입력받기.
+    vector<char> vertices_info(N+1);
+    for(int i=1; i<=N; ++i){
+        char info;
+        cin >> info;
+        vertices_info[i] = info;
+    }
+
+    // 문제 조건에 부합하는 간선들 정보 이용해 그래프로 만들기.
+    vector<vector<pair<int, int>>> graph(N+1);
+    for(int i=0; i<M; ++i){
+        int u, v, d;
+        cin >> u >> v >> d;
+        if(vertices_info[u] == vertices_info[v])
+            continue;
+        graph[u].push_back(make_pair(v, d));
+        graph[v].push_back(make_pair(u, d));
+    }
+
+    // Prim's algorithm 이용해 MST 구하기.
+    vector<bool> visit(N+1, 0);
+    priority_queue<pair<int, int>, vector<pair<int, int>>, cmp> pq;
+
+    visit[1] = true;
+    for(int i=0; i<graph[1].size(); ++i)
+        pq.push(make_pair(graph[1][i].first, graph[1][i].second));
+
+    int total_MST_weight = 0;
+    int MST_vertex_cnt = 1;
+    while(!pq.empty()){
+        int v = pq.top().first;
+        int w = pq.top().second;
+        pq.pop();
+
+        if(visit[v])
+            continue;
+        visit[v] = true;
+        total_MST_weight += w;
+        ++MST_vertex_cnt;
+        if(MST_vertex_cnt == N)
+            break;
+        for(int i=0; i<graph[v].size(); ++i){
+            if(!visit[graph[v][i].first])
+                pq.push(make_pair(graph[v][i].first, graph[v][i].second));
+        }
+    }
+
+    // 정답 출력.
+    if(MST_vertex_cnt != N)
+        cout << -1;
+    else
+        cout << total_MST_weight;
+    return 0;
+}
+
