@@ -61,3 +61,54 @@ int main() {
     }
     return 0;
 }
+
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+using namespace std;
+
+int main() {
+    // 입력.
+    int n;
+    cin >> n;
+    vector<int> a(n);
+    for(int i=0; i<n; ++i) {
+        int val;
+        cin >> val;
+        a[i] = val;
+    }
+
+    // 그리디 & 이분탐색 이용해 길이구하고, 추가적인 vector 이용해 부분 수열 구하기.
+    vector<int> LIS;
+    vector<int> index(n);
+    for(int i=0; i<n; ++i) {
+        if(LIS.empty() || LIS.back() < a[i]) {
+            LIS.push_back(a[i]);
+            index[i] = LIS.size() - 1;
+        }
+        else {
+            auto it = lower_bound(LIS.begin(), LIS.end(), a[i]);
+            *it = a[i];
+            index[i] = it - LIS.begin();
+        }
+    }
+
+    // 정답 출력.
+    cout << LIS.size() << '\n';
+
+    int tmp = LIS.size() - 1;
+    stack<int> s;
+    for(int i=n-1; i>=0; --i) {
+        if(index[i] == tmp) {
+            s.push(a[i]);
+            --tmp;
+        }
+    }
+
+    while(!s.empty()) {
+        cout << s.top() << ' ';
+        s.pop();
+    }
+    return 0;
+}
