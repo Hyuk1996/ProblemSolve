@@ -3,6 +3,25 @@
 using namespace std;
 const int MAX = 1000000;
 
+int getCandy2(vector<int>& indexTree, int order) {
+	int curP = 1;
+
+	while (curP < (indexTree.size() / 2)) {
+		int left = curP * 2;
+		int right = curP * 2 + 1;
+
+		if (indexTree[left] < order) {
+			order -= indexTree[left];
+			curP = right;
+		}
+		else {
+			curP = left;
+		}
+	}
+
+	int candyVal = curP - (indexTree.size() / 2) + 1;
+	return candyVal;
+}
 bool check(vector<int>& indexTree, int end, int goal) {
 	int startIdx = indexTree.size() / 2;
 
@@ -76,7 +95,8 @@ int main() {
 		cin >> A;
 		if (A == 1) {
 			cin >> B;
-			int candyVal = getCandy(indexTree, B);
+			//int candyVal = getCandy(indexTree, B);
+			int candyVal = getCandy2(indexTree, B);
 			candy[candyVal]--;
 			updateIndexTree(indexTree, candyVal, -1);
 			answers.push_back(candyVal);
