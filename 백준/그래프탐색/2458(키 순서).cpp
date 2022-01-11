@@ -52,3 +52,63 @@ int main() {
 	cout << answer;
 	return 0;
 }
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+const int INF = 987654321;
+
+void floydWarshall(vector<vector<int>>& graph, int N) {
+	for (int k = 1; k <= N; ++k) {
+		for (int i = 1; i <= N; ++i) {
+			if (i == k) {
+				continue;
+			}
+			for (int j = 1; j <= N; ++j) {
+				if (graph[i][k] == INF || graph[k][j] == INF) {
+					continue;
+				}
+				graph[i][j] = min(graph[i][j], graph[i][k] + graph[k][j]);
+			}
+		}
+	}
+}
+void input(int& N, int& M, vector<vector<int>>& graph) {
+	cin >> N >> M;
+	graph.assign(N + 1, vector<int>(N + 1, INF));
+	int a, b;
+	for (int i = 0; i < M; ++i) {
+		cin >> a >> b;
+		graph[a][b] = 0;
+	}
+}
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(0);
+
+	int N, M;
+	vector<vector<int>> graph;
+	input(N, M, graph);
+
+	floydWarshall(graph, N);
+
+	int answer = 0;
+	int cnt;
+	for (int i = 1; i <= N; ++i) {
+		cnt = 0;
+		for (int j = 1; j <= N; ++j) {
+			if (graph[i][j] == 0) {
+				cnt++;
+			}
+			if (graph[j][i] == 0) {
+				cnt++;
+			}
+		}
+		if (cnt == N - 1) {
+			answer++;
+		}
+	}
+	cout << answer;
+	return 0;
+}
