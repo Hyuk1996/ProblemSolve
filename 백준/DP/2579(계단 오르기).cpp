@@ -30,3 +30,45 @@ int main(){
     cout << cache[n];
     return 0;
 }
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int recursive(vector<int>& stairs, int N, vector<int>& dp) {
+	if (N <= 1) {
+		return stairs[N];
+	}
+	else if (N == 2) {
+		if (dp[N - 1] == 0) {
+			dp[N - 1] = recursive(stairs, N - 1, dp);
+		}
+		return dp[N - 1] + stairs[N];
+	}
+	else {
+		if (dp[N] == 0) {
+			dp[N] = max(recursive(stairs, N - 2, dp), recursive(stairs, N - 3, dp) + stairs[N-1]) + stairs[N];
+		}
+		return dp[N];
+	}
+}
+void input(int& N, vector<int>& stairs) {
+	cin >> N;
+	stairs.assign(N + 1, 0);
+	for (int i = 1; i <= N; ++i) {
+		cin >> stairs[i];
+	}
+}
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(0);
+
+	int N;
+	vector<int> stairs;
+	input(N, stairs);
+
+	vector<int> dp(N + 1, 0);
+	int answer = recursive(stairs, N, dp);
+	cout << answer;
+	return 0;
+}
