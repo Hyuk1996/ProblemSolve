@@ -42,3 +42,17 @@ class Solution {
     }
     
 }
+
+//간결하지만 수행시간은 오래걸리는 풀이
+class Solution {
+    public int solution(String skill, String[] skill_trees) {
+        int answer = 0;
+        
+        for(String skill_tree : skill_trees) {
+            if(skill.indexOf(skill_tree.replaceAll("[^"+ skill + "]", "")) == 0) {
+                answer++;
+            }
+        }
+        return answer;
+    }
+}
