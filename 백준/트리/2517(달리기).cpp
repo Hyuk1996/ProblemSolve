@@ -1,98 +1,91 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <unordered_map>
 using namespace std;
 
-int binarySearch(vector<int>& compress, int key) {
-	int lo = 0;
-	int hi = compress.size();
-	while (lo + 1 < hi) {
-		int mid = lo + (hi - lo) / 2;
-		if (compress[mid] <= key) {
-			lo = mid;
-		}
-		else {
-			hi = mid;
-		}
-	}
-	return lo;
+void updateIDT(vector<int>& IDT, int idx) {
+    idx += (IDT.size() / 2);
+    IDT[idx]++;
+    while(idx > 1) {
+        idx /= 2;
+        IDT[idx] = IDT[idx * 2] + IDT[idx * 2 + 1];
+    }
 }
-void updateIndexTree(vector<int>& indexTree, int p) {
-	p += indexTree.size() / 2;
-	indexTree[p] = 1;
-	while (p > 1) {
-		p = p / 2;
-		indexTree[p] = indexTree[p * 2] + indexTree[p * 2 + 1];
-	}
-}
-int rangeSum(vector<int>& indexTree, int right) {
-	int startIdx = indexTree.size() / 2;
-	int left = startIdx;
-	right += startIdx;
-	int sum = 0;
-	while (left <= right) {
-		if (left % 2 == 1) {
-			sum += indexTree[left];
-		}
-		if (right % 2 == 0) {
-			sum += indexTree[right];
-		}
+int rangeSum(vector<int>& IDT, int left) {
+    left += (IDT.size() / 2);
+    int right = IDT.size() - 1;
+    int sum = 0;
+    while(left <= right) {
+        if(left % 2 == 1) {
+            sum += IDT[left];
+        }
+        if(right % 2 == 0) {
+            sum += IDT[right];
+        }
 
-		left = (left + 1) / 2;
-		right = (right - 1) / 2;
-	}
-	return sum;
+        left = (left + 1) / 2;
+        right = (right - 1) / 2;
+    }
+    return sum;
 }
-void makeIndexTree(vector<int>& indexTree, int N) {
-	int startIdx = 1;
-	while (startIdx < N) {
-		startIdx *= 2;
-	}
-	indexTree.assign(startIdx * 2, 0);
+int binarySearch(vector<int>& order, int key) {
+    int lo = 0;
+    int hi = order.size();
+    int mid;
+    while(lo + 1 < hi) {
+        mid = lo + (hi - lo) / 2;
+        if(order[mid] <= key) {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    return lo;
 }
-void solve(int N, vector<int>& players, vector<int>& answers) {
-	//좌표 압축하기.
-	vector<int> compress(players);
-	sort(compress.begin(), compress.end());
-	/*
-	unordered_map<int, int> dict; //압축정보 저장
-	for (int i = 0; i < compress.size(); ++i) {
-		dict[compress[i]] = i;
-	}*/
+int getIDTSize(int N) {
+    int leafSize = 1;
+    while(leafSize < N) {
+        leafSize *= 2;
+    }
 
-	//indexTree 만들기
-	vector<int> indexTree;
-	makeIndexTree(indexTree, N);
+    return leafSize * 2;
+}
+void solve(int& N, vector<int>& players, vector<int>& idealScore) {
+    int IDTSize = getIDTSize(N);
+    vector<int> IDT(IDTSize, 0);
 
-	//각 선수의 최선의 등수 구하기
-	for (int i = 0; i < N; ++i) {
-		//int compressIdx = dict[players[i]];
-		int compressIdx = binarySearch(compress, players[i]);
-		
-		// 자신보다 못한 선수 구하기
-		int notGoodPlayerCnt = rangeSum(indexTree, compressIdx);
-		answers.push_back((i + 1) - notGoodPlayerCnt);
-		updateIndexTree(indexTree, compressIdx);
-	}
+    vector<int> order(players);
+    sort(order.begin(), order.end());
+
+    for(int i = 0; i < N; ++i) {
+        int idx = binarySearch(order, players[i]);
+        
+        int sum = rangeSum(IDT, idx);
+        idealScore[i] = sum + 1;
+
+        updateIDT(IDT, idx);
+    }
 }
 void input(int& N, vector<int>& players) {
-	cin >> N;
-	players.assign(N, 0);
-	for (int i = 0; i < N; ++i) {
-		cin >> players[i];
-	}
+    cin >> N;
+    players.assign(N, 0);
+    for(int i = 0; i < N; ++i) {
+        cin >> players[i];
+    }
 }
 int main() {
-	int N;
-	vector<int> players;
-	input(N, players);
+    ios::sync_with_stdio(false);
+    cin.tie(0);
 
-	vector<int> answers;
-	solve(N, players, answers);
+    int N;
+    vector<int> players;
+    input(N, players);
 
-	for (int i = 0; i < answers.size(); ++i) {
-		cout << answers[i] << '\n';
-	}
-	return 0;
+    vector<int> idealScore(N, 0);
+    solve(N, players, idealScore);
+
+    for(int i = 0; i < N; ++i) {
+        cout << idealScore[i] << '\n';
+    }
+    return 0;
 }
