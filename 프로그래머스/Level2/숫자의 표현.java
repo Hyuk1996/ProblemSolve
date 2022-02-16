@@ -20,3 +20,28 @@ class Solution {
         return recursiveSum(curNum, curSum, n);
     }
 }
+
+// 반복문 버전
+class Solution {
+    public int solution(int n) {
+        int answer = 0;
+        
+        int num, sum;
+        for(int i = 1; i <= n; ++i) {
+            num = i;
+            sum = i;
+            while(true) {
+                if(sum >= n) {
+                    break;
+                }
+                num++;
+                sum += num;
+            }
+            
+            if(sum == n) {
+                answer++;
+            }
+        }
+        return answer;
+    }
+}
