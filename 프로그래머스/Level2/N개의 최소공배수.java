@@ -41,3 +41,33 @@ class Solution {
     }
     
 }
+
+//선형적 풀이
+class Solution {
+    public int solution(int[] arr) {
+        int answer = arr[0];
+        for(int i = 1; i < arr.length; ++i) {
+            answer = getLCM(answer, arr[i]);
+        }
+        return answer;
+    }
+    
+    int getLCM(int a, int b) {
+        if(a < b) {
+            int tmp = a;
+            a = b;
+            b = tmp;
+        }
+        int GCD = getGCD(a, b);
+        
+        return (a / GCD) * b;
+    }
+    
+    int getGCD(int a, int b) {
+        if(a % b == 0) {
+            return b;
+        }
+        
+        return getGCD(b, a % b);
+    }
+}
