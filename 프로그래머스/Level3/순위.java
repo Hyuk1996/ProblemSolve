@@ -56,3 +56,56 @@ class Solution {
         }
     }
 }
+
+
+//플로이드 와셔 풀이
+class Solution {
+    
+    private boolean[][] graph;
+    
+    public int solution(int n, int[][] results) {
+        int answer = 0;
+        
+        makeGraph(n, results);
+        
+        floydWarshall(n);
+        
+        for(int i = 1; i <= n; ++i) {
+            boolean isAnswer = true;
+            for(int j = 1; j <= n; ++j) { 
+                if(i != j && !graph[i][j] && !graph[j][i]) {
+                    isAnswer = false;
+                    break;
+                }
+            }
+            if(isAnswer) {
+                answer++;
+            }
+        }
+        return answer;
+    }
+    
+    private void makeGraph(int n, int[][] results) {
+        graph = new boolean[n + 1][n + 1];
+        
+        for(int i = 0; i < results.length; ++i) {
+            graph[results[i][0]][results[i][1]] = true;
+        }
+    }
+    
+    private void floydWarshall(int n) {
+        for(int k = 1; k <= n; ++k) {
+            for(int i = 1; i <= n; ++i) {
+                for(int j = 1; j <= n; ++j) {
+                    if(i == k || j == k || i == j) {
+                        continue;
+                    }
+                    
+                    if(graph[i][k] && graph[k][j]) {
+                        graph[i][j] = true;
+                    }
+                }
+            }
+        }
+    }
+}
