@@ -7,30 +7,31 @@ class Solution {
     public String solution(int n, int t, int m, String[] timetable) {
       
         PriorityQueue<Integer> waitLine = sortTimetable(timetable);
-        List<Integer> bus = new ArrayList<>();
+        int boardCrewCnt = 0;
+        int lastBoardTime = 0;
+        int busArrivedTime = START_TIME - t;
         
-        //탑승 시작
+        //n개의 버스에 탑승 시작
         for(int i = 0; i < n; ++i) {
-            bus.clear();
+            boardCrewCnt = 0;
+            lastBoardTime = 0;
+            busArrivedTime += t;
             
-            int arrivedTime = START_TIME + (t * i);
-            
-            while(bus.size() < m && !waitLine.isEmpty()) {
-                int crewTime = waitLine.peek();
-                if(crewTime > arrivedTime) {
+            while(boardCrewCnt < m && !waitLine.isEmpty()) {
+                int crewArrivedTime = waitLine.peek();
+                if(crewArrivedTime > busArrivedTime) {
                     break;
                 }
                 
-                bus.add(crewTime);
+                boardCrewCnt++;
+                lastBoardTime = crewArrivedTime;
                 waitLine.remove();
             }
         }
         
         //마지막 버스를 탑승한 승객 정보를 이용해 콘의 도착 시간 구하기
-        int conArriveTime = (bus.size() == m)? bus.get(m - 1) - 1 : START_TIME + (t * (n - 1));
-        
-        String answer = makeAnswerFormat(conArriveTime);
-        return answer;
+        int conArrivedTime = (boardCrewCnt == m)? lastBoardTime - 1 : busArrivedTime;
+        return String.format("%02d:%02d", conArrivedTime / 60, conArrivedTime % 60);
     }
     
     private PriorityQueue<Integer> sortTimetable(String[] timetable) {
@@ -46,11 +47,4 @@ class Solution {
         return Integer.parseInt(tmp[0]) * 60 + Integer.parseInt(tmp[1]);
     }
     
-    private String makeAnswerFormat(int conTime) {
-        String time = (conTime / 60 < 10)? "0" : "";
-        time += String.valueOf(conTime / 60) + ":";
-        time += (conTime % 60 < 10)? "0" : "";
-        time += String.valueOf(conTime % 60);
-        return time;
-    }
 }
