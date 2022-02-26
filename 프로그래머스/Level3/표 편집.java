@@ -143,86 +143,77 @@ import java.util.*;
 
 class Solution {
     
-    Node head;
-    Node cursor; // DoubleLinkedList에서 현재 위치.
+    private Node cursor;
     
     public String solution(int n, int k, String[] cmd) {
-        String answer = "";
         
-        initList(n, k); //DoubleLinkedList 만들기
-        Stack<Node> delete = new Stack<>();
+        initList(n, k);
+        Stack<Node> deleteNode = new Stack<>();
         
-        int x;
-        for(String c : cmd) {
-            String[] token = c.split(" ");
+        for(String query : cmd) {
+            String[] token = query.split(" ");
             
             if(token[0].equals("U")) {
-                x = Integer.parseInt(token[1]);
+                int x = Integer.parseInt(token[1]);
                 for(int i = 0; i < x; ++i) {
                     cursor = cursor.prev;
                 }
-                
             } else if(token[0].equals("D")) {
-                x = Integer.parseInt(token[1]);
+                int x = Integer.parseInt(token[1]);
                 for(int i = 0; i < x; ++i) {
                     cursor = cursor.next;
                 }
-                
             } else if(token[0].equals("C")) {
                 
-                //다음 커서 찾기
-                Node nextCur = (cursor.next == null)? cursor.prev : cursor.next;
+                Node nextCursor = (cursor.next != null)? cursor.next : cursor.prev;
                 
-                //삭제
                 cursor.remove();
-                delete.push(cursor);
+                deleteNode.push(cursor);
                 
-                cursor = nextCur;
-                
+                cursor = nextCursor;
             } else {
-                delete.pop().restore();
+                deleteNode.pop().restore();
             }
         }
         
-        return compare(n, delete);
+        String answer = compare(n, deleteNode);
+        return answer;
     }
     
     void initList(int n, int k) {
-        head = new Node(0);
-        Node prev = head;
+        Node tail = new Node(0);
         if(k == 0) {
-            cursor = prev;
+            cursor = tail;
         }
-        
         for(int i = 1; i < n; ++i) {
-            Node node = new Node(i);
+            Node cur = new Node(i);
             if(k == i) {
-                cursor = node;
+                cursor = cur;
             }
             
-            prev.next = node;
-            node.prev = prev;
-            prev = node;
+            //이어주기
+            tail.next = cur;
+            cur.prev = tail;
+            
+            tail = cur;
         }
     }
     
-    String compare(int n, Stack<Node> delete) {
+    String compare(int n, Stack<Node> deleteNode) {
         StringBuilder sb = new StringBuilder();
-        //일단 다 "O"로 채우기.
         for(int i = 0; i < n; ++i) {
             sb.append("O");
         }
-        //현재 지워진 Node만 X로 바꿔주기.
-        while(!delete.isEmpty()) {
-            sb.setCharAt(delete.pop().idx, 'X');
+        while(!deleteNode.isEmpty()) {
+            sb.setCharAt(deleteNode.pop().idx, 'X');
         }
         return sb.toString();
     }
     
     class Node {
-        Node prev = null;
-        Node next = null;
         int idx;
+        Node next = null;
+        Node prev = null;
         
         Node(int idx) {
             this.idx = idx;
