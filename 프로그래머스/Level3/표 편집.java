@@ -137,3 +137,113 @@ class Solution {
     }
     
 }
+
+//더블링크드리스트 풀이
+import java.util.*;
+
+class Solution {
+    
+    Node head;
+    Node cursor; // DoubleLinkedList에서 현재 위치.
+    
+    public String solution(int n, int k, String[] cmd) {
+        String answer = "";
+        
+        initList(n, k); //DoubleLinkedList 만들기
+        Stack<Node> delete = new Stack<>();
+        
+        int x;
+        for(String c : cmd) {
+            String[] token = c.split(" ");
+            
+            if(token[0].equals("U")) {
+                x = Integer.parseInt(token[1]);
+                for(int i = 0; i < x; ++i) {
+                    cursor = cursor.prev;
+                }
+                
+            } else if(token[0].equals("D")) {
+                x = Integer.parseInt(token[1]);
+                for(int i = 0; i < x; ++i) {
+                    cursor = cursor.next;
+                }
+                
+            } else if(token[0].equals("C")) {
+                
+                //다음 커서 찾기
+                Node nextCur = (cursor.next == null)? cursor.prev : cursor.next;
+                
+                //삭제
+                cursor.remove();
+                delete.push(cursor);
+                
+                cursor = nextCur;
+                
+            } else {
+                delete.pop().restore();
+            }
+        }
+        
+        return compare(n, delete);
+    }
+    
+    void initList(int n, int k) {
+        head = new Node(0);
+        Node prev = head;
+        if(k == 0) {
+            cursor = prev;
+        }
+        
+        for(int i = 1; i < n; ++i) {
+            Node node = new Node(i);
+            if(k == i) {
+                cursor = node;
+            }
+            
+            prev.next = node;
+            node.prev = prev;
+            prev = node;
+        }
+    }
+    
+    String compare(int n, Stack<Node> delete) {
+        StringBuilder sb = new StringBuilder();
+        //일단 다 "O"로 채우기.
+        for(int i = 0; i < n; ++i) {
+            sb.append("O");
+        }
+        //현재 지워진 Node만 X로 바꿔주기.
+        while(!delete.isEmpty()) {
+            sb.setCharAt(delete.pop().idx, 'X');
+        }
+        return sb.toString();
+    }
+    
+    class Node {
+        Node prev = null;
+        Node next = null;
+        int idx;
+        
+        Node(int idx) {
+            this.idx = idx;
+        }
+        
+        void remove() {
+            if(prev != null) {
+                prev.next = next;
+            }
+            if(next != null) {
+                next.prev = prev;
+            }
+        }
+        
+        void restore() {
+            if(prev != null) {
+                prev.next = this;
+            }
+            if(next != null) {
+                next.prev = this;
+            }
+        }
+    }
+}
