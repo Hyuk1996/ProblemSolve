@@ -25,7 +25,8 @@ class Solution {
         
         for(int i = 0; i < user_id.length; ++i) {
             if(!check[i]) {
-                if(possible(user_id[i], banned_id[depth])) {
+                String regx = banned_id[depth].replace("*", "[\\w\\d]");
+                if(user_id[i].matches(regx)) {
                     list.add(user_id[i]);
                     check[i] = true;
                     permutation(user_id, banned_id, depth + 1, check);
@@ -34,22 +35,6 @@ class Solution {
                 }
             }
         }
-    }
-    
-    private boolean possible(String u_id, String b_id) {
-        if(u_id.length() != b_id.length()) {
-            return false;
-        }
-        for(int i = 0; i < b_id.length(); ++i) {
-            if(b_id.charAt(i) == '*') {
-                continue;
-            }
-            
-            if(b_id.charAt(i) != u_id.charAt(i)) {
-                return false;
-            }
-        }
-        return true;
     }
     
     private int removeOverlap() {
