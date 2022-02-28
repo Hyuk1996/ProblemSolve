@@ -50,3 +50,39 @@ class Solution {
         return set.size();
     }
 }
+
+//비트 마스킹 이용
+import java.util.*;
+
+class Solution {
+    
+    private Set<Integer> answer = new HashSet<>();
+    boolean[] check;
+    
+    
+    public int solution(String[] user_id, String[] banned_id) {
+        
+        
+        check = new boolean[user_id.length];
+        permutation(user_id, banned_id, 0, 0);
+        
+        return answer.size();
+    }
+    
+    private void permutation(String[] user_id, String[] banned_id, int depth, int bit) {
+        if(depth == banned_id.length) {
+            answer.add(bit); //최종 선택된 user_id 정보 저장
+            return;
+        }
+        
+        for(int i = 0; i < user_id.length; ++i) {
+            if(((bit >> i) & 1) != 1) { //비트 마스킹을 이용해 i번째 user_id가 선택되었는 확인
+                String regx = banned_id[depth].replace("*", "[\\w\\d]");
+                if(user_id[i].matches(regx)) {
+                    permutation(user_id, banned_id, depth + 1, (bit | 1 << i)); // 비트 마스킹을 이용해 i번째 아이디가 선택됨을 체크
+                }
+            }
+        }
+    }
+    
+}
