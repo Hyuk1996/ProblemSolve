@@ -46,3 +46,31 @@ class Solution {
         }
     }
 }
+
+//up-down 풀이
+class Solution {
+    
+    int[] cache;
+    final int CONST = (int)(1e9 + 7);
+    
+    public int solution(int n) {
+        
+        cache = new int[n + 1];
+        return recursive(n);
+    }
+    
+    int recursive(int n) {
+        if(n <= 2) {
+            return n;
+        }
+        
+        if(cache[n - 1] == 0) {
+            cache[n - 1] = recursive(n - 1);
+        }
+        if(cache[n - 2] == 0) {
+            cache[n - 2] = recursive(n - 2);
+        }
+        
+        return cache[n] = (cache[n - 1] + cache[n - 2]) % CONST;
+    }
+}
