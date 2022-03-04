@@ -40,3 +40,42 @@ class Solution {
     }
 
 }
+
+//DFS
+class Solution {
+    
+    int answer = Integer.MAX_VALUE;
+    boolean[] isVisited;
+    
+    public int solution(String begin, String target, String[] words) {
+        
+        isVisited = new boolean[words.length];
+        dfs(words, begin, 0, target);
+        return (answer == Integer.MAX_VALUE)? 0 : answer;
+    }
+    
+    void dfs(String[] words, String curWord, int depth, String target) {
+        if(curWord.equals(target)) {
+            answer = Math.min(answer, depth);
+            return;
+        }
+        
+        for(int i = 0; i < words.length; ++i) {
+            if(!isVisited[i] && canChange(curWord, words[i])) {
+                isVisited[i] = true;
+                dfs(words, words[i], depth + 1, target);
+                isVisited[i] = false;
+            }
+        }
+    }
+    
+    boolean canChange(String a, String b) {
+        int diffCnt = 0;
+        for(int i = 0; i < a.length(); ++i) {
+            if(a.charAt(i) != b.charAt(i)) {
+                diffCnt++;
+            }
+        }
+        return (diffCnt == 1)? true : false;
+    }
+}
