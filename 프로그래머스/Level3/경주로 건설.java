@@ -78,3 +78,71 @@ class Solution {
         }
     }
 }
+
+//DFS + DP
+import java.util.*;
+
+class Solution {
+    
+    final int[] dr = {0, 1, 0, -1};
+    final int[] dc = {1, 0, -1, 0};
+    int[][][] dp;
+    
+    public int solution(int[][] board) {
+        
+        int N = board.length;
+        initDp(N);
+        
+        dfs(0, 0, 0, board, N);
+        
+        int answer = Integer.MAX_VALUE;
+        for(int i = 0; i < 4; ++i) {
+            answer = Math.min(answer, dp[N - 1][N - 1][i]);
+        }
+        return answer;
+    }
+    
+    void dfs(int r, int c, int d, int[][] board, int N) {
+        for(int i = 0; i < 4; ++i) {
+            int nextR = r + dr[i];
+            int nextC = c + dc[i];
+            int cost;
+            if(r == 0 && c == 0) {
+                cost = 100;
+            } else {
+                if((d % 2) == (i % 2)) {
+                    cost = 100;
+                } else {
+                    cost = 600;
+                }
+            }
+            
+            if(nextR < 0 || nextR >= N || nextC < 0 || nextC >= N) {
+                continue;
+            }
+            if(board[nextR][nextC] == 1) {
+                continue;
+            }
+            
+            if(dp[r][c][d] + cost < dp[nextR][nextC][i]) {
+                dp[nextR][nextC][i] = dp[r][c][d] + cost;
+                dfs(nextR, nextC, i, board, N);
+            }
+        }
+    }
+    
+    void initDp(int N) {
+        dp = new int[N][N][4];
+        for(int i = 0; i < N; ++i) {
+            for(int j = 0; j < N; ++j) {
+                for(int k = 0; k < 4; ++k) {
+                    dp[i][j][k] = Integer.MAX_VALUE;
+                }
+            }
+        }
+        
+        for(int k = 0; k < 4; ++k) {
+            dp[0][0][k] = 0;
+        }
+    }
+}
