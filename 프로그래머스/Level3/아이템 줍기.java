@@ -106,3 +106,76 @@ class Solution {
         }
     }
 }
+
+//다른 접근 풀이
+class Solution {
+    
+    int[][] map;
+    final int U = 1;
+    final int D = 2;
+    final int L = 3;
+    final int R = 4;
+    
+    
+    public int solution(int[][] rectangle, int characterX, int characterY, int itemX, int itemY) {
+        //좌표에 직사각형 정보 이용해 테두리 표시하기. 이때 테두리의 이동방향도 같이 저장(시계방향)
+        setMap(rectangle);
+        
+        //현재 위치 -> 아이탬 거리 vs 아이템 -> 현재 위치 거리 중 최솟값이 답
+        return Math.min(move(characterX, characterY, itemX, itemY), move(itemX, itemY, characterX, characterY));
+    }
+    
+    void setMap(int[][] rectangle) {
+        map = new int[51][51];
+        for(int i = 0; i < rectangle.length; ++i) {
+            int leftUpX = rectangle[i][0];
+            int leftUpY = rectangle[i][1];
+            int rightDownX = rectangle[i][2];
+            int rightDownY = rectangle[i][3];
+            
+            //직사각형 모서리
+            map[leftUpY][leftUpX] = R;
+            map[leftUpY][rightDownX] = D;
+            map[rightDownY][rightDownX] = L;
+            map[rightDownY][leftUpX] = U;
+            
+            //모서리 제외한 테두리
+            for(int x = leftUpX + 1; x < rightDownX; ++x) {
+                if(map[leftUpY][x] != U) {
+                    map[leftUpY][x] = R;
+                }
+                
+                if(map[rightDownY][x] != D) {
+                    map[rightDownY][x] = L;
+                }
+            }
+            
+            for(int y = leftUpY + 1; y < rightDownY; ++y) {
+                if(map[y][leftUpX] != L) {
+                    map[y][leftUpX] = U;
+                }
+                
+                if(map[y][rightDownX] != R) {
+                    map[y][rightDownX] = D;
+                }
+            }
+        }
+    }
+    
+    int move(int x, int y, int endX, int endY) {
+        if(x == endX && y == endY) {
+            return 0;
+        }
+        
+        if(map[y][x] == R) {
+            x++;
+        } else if(map[y][x] == D) {
+            y++;
+        } else if(map[y][x] == L) {
+            x--;
+        } else {
+            y--;
+        }
+        return 1 + move(x, y, endX, endY);
+    }
+}
