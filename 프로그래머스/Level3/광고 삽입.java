@@ -49,3 +49,5 @@ class Solution {
     }
     
 }
+
+//최적화 풀이
