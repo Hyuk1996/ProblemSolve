@@ -3,43 +3,37 @@ import java.util.*;
 class Solution {
     
     Node[] nodes;
-    int idx;
     
     public int[][] solution(int[][] nodeinfo) {
         
         makeBinaryTree(nodeinfo);
         
-        int[][] answer = new int[2][nodes.length];
+        Queue<Integer> preorders = new LinkedList<>();
+        preorder(nodes[0], preorders);
         
-        idx = 0;
-        preorder(nodes[0], answer[0]);
+        Queue<Integer> postorders = new LinkedList<>();
+        postorder(nodes[0], postorders);
         
-        idx = 0;
-        postorder(nodes[0], answer[1]);
-        
-        return answer;
+        return getAnswer(preorders, postorders);
     }
     
     void makeBinaryTree(int[][] nodeinfo) {
-        //초기작업
         nodes = new Node[nodeinfo.length];
         for(int i = 0; i < nodeinfo.length; ++i) {
             nodes[i] = new Node(nodeinfo[i][0], nodeinfo[i][1], i + 1);
         }
         
-        //y좌표 내림차순 정렬
         Arrays.sort(nodes, new Comparator<Node>() {
             @Override
-            public int compare(Node n1, Node n2) {
-                return n2.y - n1.y;
+            public int compare(Node o1, Node o2) {
+                return o2.y - o1.y;
             }
         });
         
         Node root = nodes[0];
-        //Node 삽입
         for(int i = 1; i < nodes.length; ++i) {
             insertNode(root, nodes[i]);
-        }    
+        }
     }
     
     void insertNode(Node parent, Node node) {
@@ -58,37 +52,53 @@ class Solution {
         }
     }
     
-    void preorder(Node node, int[] answer) {
-        answer[idx++] = node.value;
+    void preorder(Node node, Queue<Integer> preorders) {
+        preorders.add(node.no);
         if(node.left != null) {
-            preorder(node.left, answer);
+            preorder(node.left, preorders);
         }
         if(node.right != null) {
-            preorder(node.right, answer);
+            preorder(node.right, preorders);
         }
     }
     
-    void postorder(Node node, int[] answer) {
+    void postorder(Node node, Queue<Integer> postorders) {
         if(node.left != null) {
-            postorder(node.left, answer);
+            postorder(node.left, postorders);
         }
         if(node.right != null) {
-            postorder(node.right, answer);
+            postorder(node.right, postorders);
         }
-        answer[idx++] = node.value;
+        postorders.add(node.no);
+    }
+    
+    int[][] getAnswer(Queue<Integer> preorders, Queue<Integer> postorders) {
+        int[][] answer = new int[2][preorders.size()];
+        
+        int idx = 0;
+        while(!preorders.isEmpty()) {
+            answer[0][idx++] = preorders.poll();
+        }
+        
+        idx = 0;
+        while(!postorders.isEmpty()) {
+            answer[1][idx++] = postorders.poll();
+        }
+        
+        return answer;
     }
     
     class Node {
         int x;
         int y;
-        int value;
-        Node left = null;
-        Node right = null;
+        int no;
+        Node left;
+        Node right;
         
-        Node(int x, int y, int value) {
+        Node(int x, int y, int no) {
             this.x = x;
             this.y = y;
-            this.value = value;
+            this.no = no;
         }
     }
 }
