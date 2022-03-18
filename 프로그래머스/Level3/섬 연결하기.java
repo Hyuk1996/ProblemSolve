@@ -79,12 +79,7 @@ class Solution {
     public int solution(int n, int[][] costs) {
         
         //간선 배열을 가중치 기준으로 정렬
-        Arrays.sort(costs, new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                return o1[2] - o2[2];
-            }
-        });
+        Arrays.sort(costs, (o1, o2) -> o1[2] - o2[2]);
         
         DisjointSet set = new DisjointSet(n);
         int totalWeight = 0;
