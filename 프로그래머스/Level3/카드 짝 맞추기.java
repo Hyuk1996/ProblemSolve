@@ -21,9 +21,7 @@ class Solution {
         List<Integer> cards = new ArrayList(map.keySet());
         boolean[] isSelected = new boolean[cards.size()];
         Integer[] permutation = new Integer[cards.size()];
-        
         getPermutations(cards, isSelected, permutation, 0);
-        
         
         //각 순서에 대해 게임 진행
         for(List<Integer> cardOrder : permutations) {
@@ -83,28 +81,29 @@ class Solution {
         int c2 = map.get(cardNum).get(1).c;
         
         //(r1, c1) -> (r2, c2)
-        int[][] tmp1 = copyBoard(board);
-        int tmpCnt1 = moveCnt;
         
-        tmpCnt1 += move(tmp1, r, c, r1, c1);
-        tmpCnt1 += move(tmp1, r1, c1, r2, c2);
-        tmpCnt1 += 2; //Enter
+        int first = move(board, r, c, r1, c1);
+        int second = move(board, r1, c1, r2, c2);
         
-        tmp1[r1][c1] = 0;
-        tmp1[r2][c2] = 0;
-        game(cardOrder, tmp1, r2, c2, gameTurn + 1, tmpCnt1);
+        board[r1][c1] = 0;
+        board[r2][c2] = 0;
+        game(cardOrder, board, r2, c2, gameTurn + 1, moveCnt + first + second + 2);
+        
+        board[r1][c1] = cardNum;
+        board[r2][c2] = cardNum;
         
         //(r2, c2) -> (r1, c1)
-        int[][] tmp2 = copyBoard(board);
-        int tmpCnt2 = moveCnt;
         
-        tmpCnt2 += move(tmp2, r, c, r2, c2);
-        tmpCnt2 += move(tmp2, r2, c2, r1, c1);
-        tmpCnt2 += 2; //Enter
+        first = move(board, r, c, r2, c2);
+        second = move(board, r2, c2, r1, c1);
         
-        tmp2[r1][c1] = 0;
-        tmp2[r2][c2] = 0;
-        game(cardOrder, tmp2, r1, c1, gameTurn + 1, tmpCnt2);
+        board[r1][c1] = 0;
+        board[r2][c2] = 0;
+        
+        game(cardOrder, board, r1, c1, gameTurn + 1, moveCnt + first + second + 2);
+        
+        board[r1][c1] = cardNum;
+        board[r2][c2] = cardNum;
     }
     
     int[][] copyBoard(int[][] board) {
@@ -185,7 +184,7 @@ class Solution {
         }
         return dist;
     }
- 
+    
     class Point {
         int r, c;
         Point(int r, int c) {
