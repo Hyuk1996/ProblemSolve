@@ -2,9 +2,12 @@ import java.util.*;
 
 class Solution {
     
-    List<List<Integer>> permutations = new ArrayList<>(); 
+    List<List<Integer>> permutations = new ArrayList<>();
+    List<int[]> weakList = new ArrayList<>();
     
     public int solution(int n, int[] weak, int[] dist) {
+        
+        makeWeakList(weak, n);
         
         for(int answer = 1; answer <= dist.length; ++answer) {
             
@@ -13,15 +16,30 @@ class Solution {
             getPermutations(dist, isSelected, tmp, 0, answer);
             
             for(List<Integer> permutation : permutations) {
-                if(isPossible(permutation, dist, weak, n)) {
+                if(isPossible(permutation, dist)) {
                     return answer;
                 }
             }
             
             permutations.clear();
         }
-        
         return -1;
+    }
+    
+    void makeWeakList(int[] weak, int n) {
+        for(int i = 0; i < weak.length; ++i) {
+            int[] line = new int[weak.length];
+            int idx = 0;
+            
+            for(int j = i; j < weak.length; ++j) {
+                line[idx++] = weak[j];
+            }
+            for(int j = 0; j < i; ++j) {
+                line[idx++] = weak[j] + n;
+            }
+            
+            weakList.add(line);
+        }
     }
     
     void getPermutations(int[] dist, boolean[] isSelected, Integer[] tmp, int depth, int MAX) {
@@ -40,32 +58,22 @@ class Solution {
         }
     }
     
-    boolean isPossible(List<Integer> permutation, int[] dist, int[] weak, int n) {
-        int[] line = new int[weak.length];
-        int idx = 0;
-        for(int i = 0; i < weak.length; ++i) {
-            idx = 0;
-            for(int j = i; j < weak.length; ++j) {
-                line[idx++] = weak[j];
-            }
-            for(int j = 0; j < i; ++j) {
-                line[idx++] = weak[j] + n;
-            }
-            
-            idx = 0;
+    boolean isPossible(List<Integer> permutation, int[] dist) {
+        
+        for(int[] weak : weakList) {
+            int weakIdx = 0;
             for(Integer friend : permutation) {
-                int left = line[idx];
+                int left = weak[weakIdx];
                 int right = left + dist[friend];
                 
-                
-                while(idx < line.length) {
-                    if(line[idx] > right) {
+                while(weakIdx < weak.length) {
+                    if(weak[weakIdx] > right) {
                         break;
                     }
-                    idx++;
+                    weakIdx++;
                 }
                 
-                if(idx == line.length) {
+                if(weakIdx == weak.length) {
                     return true;
                 }
             }
