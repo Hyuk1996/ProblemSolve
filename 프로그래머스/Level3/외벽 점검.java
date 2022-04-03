@@ -7,13 +7,15 @@ class Solution {
     
     public int solution(int n, int[] weak, int[] dist) {
         
+        Integer[] tmpDist = Arrays.stream(dist).boxed().toArray(Integer[]::new);
+        Arrays.sort(tmpDist, Collections.reverseOrder());
+        dist = Arrays.stream(tmpDist).mapToInt(Integer::intValue).toArray();
+        
         makeWeakList(weak, n);
         
         for(int answer = 1; answer <= dist.length; ++answer) {
             
-            boolean[] isSelected = new boolean[dist.length];
-            Integer[] tmp = new Integer[answer];
-            getPermutations(dist, isSelected, tmp, 0, answer);
+            getPermutations(dist, new boolean[answer], new Integer[answer], 0, answer);
             
             for(List<Integer> permutation : permutations) {
                 if(isPossible(permutation, dist)) {
@@ -48,7 +50,7 @@ class Solution {
             return;
         }
         
-        for(int i = 0; i < dist.length; ++i) {
+        for(int i = 0; i < MAX; ++i) {
             if(!isSelected[i]) {
                 isSelected[i] = true;
                 tmp[depth] = i;
