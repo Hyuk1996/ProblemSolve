@@ -3,94 +3,75 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 class Solution {
-    
-    Map<String, Integer> pageIndex;
+        
+    int pageCnt;
+    Map<String, Integer> index;
     double[] basicScore;
-    List<String>[] linkUrlList;
+    List<String>[] linkList;
     
     public int solution(String word, String[] pages) {
         
-        pageIndex = new HashMap<>();
-        basicScore = new double[pages.length];
-        linkUrlList = new List[pages.length];
-        initLinkUrlList();
+        this.pageCnt = pages.length;
         
-        parsingHtmls(word, pages);        
+        index = new HashMap<>();
+        basicScore = new double[pageCnt];
+        linkList = new List[pageCnt];        
         
-        double[] totalScore = calTotalScore();
-    
-        return getMaxScoreIndex(totalScore);
-    }
-    
-    void initLinkUrlList() {
-        for(int i = 0; i < linkUrlList.length; ++i) {
-            linkUrlList[i] = new ArrayList<>();
-        }
+        parsingHtmls(word, pages);
+        
+        double[] totalScore = getTotalScore();
+      
+        return maxScorePageIndex(totalScore);
     }
     
     void parsingHtmls(String word, String[] pages) {
+        
         Pattern homeUrlPattern = Pattern.compile("<meta property=\"og:url\" content=\"(\\S*)\"");
-        Pattern urlPattern = Pattern.compile("<a href=\"https://(\\S*)\"");
+        Pattern linkUrlPattern = Pattern.compile("<a href=\"(\\S*)\"");
         Pattern wordPattern = Pattern.compile("\\b(?i)" + word + "\\b");
-        Matcher urlMatcher, wordMatcher, homeUrlMatcher;
         
-        String homeUrl;
-        String body;
-        String linkUrl;
-        
-        for(int i = 0; i < pages.length; ++i) {
-            
+        for(int i = 0; i < pageCnt; ++i) {
             //parsing home url
-            homeUrlMatcher = homeUrlPattern.matcher(pages[i]);
+            Matcher homeUrlMatcher = homeUrlPattern.matcher(pages[i]);
             if(homeUrlMatcher.find()) {
-                homeUrl = homeUrlMatcher.group().split("=")[2].replaceAll("\"","");
-                pageIndex.put(homeUrl, i);
+                index.put(homeUrlMatcher.group().split("=")[2].replaceAll("\"", ""), i);
             }
             
             //parsing link url
-            urlMatcher = urlPattern.matcher(pages[i]);
-            while(urlMatcher.find()) {
-                linkUrl = urlMatcher.group().split("\"")[1];
-                linkUrlList[i].add(linkUrl);
+            Matcher linkUrlMatcher = linkUrlPattern.matcher(pages[i]);
+            linkList[i] = new ArrayList<>();
+            while(linkUrlMatcher.find()) {
+                linkList[i].add(linkUrlMatcher.group().split("=")[1].replaceAll("\"", ""));
             }
             
-            //parsing word count
-            body = pages[i].split("<body>")[1].split("</body>")[0].replaceAll("[0-9]", " ");
-            wordMatcher = wordPattern.matcher(body);
-            int word_cnt = 0;
+            String text = pages[i].replaceAll("<[^>]*>", "").replaceAll("[0-9]", " ");
+            Matcher wordMatcher = wordPattern.matcher(text);
+            int wordCnt = 0;
             while(wordMatcher.find()) {
-                word_cnt++;
+                wordCnt++;
             }
-            basicScore[i] = word_cnt;
+            basicScore[i] = (double) wordCnt;            
         }
     }
     
-    double[] calTotalScore() {
-        double[] totalScore = new double[basicScore.length];
-        for(int i = 0; i < totalScore.length; ++i) {
-            totalScore[i] = basicScore[i];
-        }
-        
-        //외부 점수 계산
-        for(int i = 0; i < totalScore.length; ++i) {
-            if(linkUrlList[i].size() == 0) {
-                continue;
-            }
-            
-            double score = basicScore[i] / (double) linkUrlList[i].size();
-            for(String url : linkUrlList[i]) {
-                if(pageIndex.containsKey(url)) {
-                    totalScore[pageIndex.get(url)] += score;
+    double[] getTotalScore() {
+        double[] totalScore = new double[pageCnt];
+        for(int i = 0; i < pageCnt; ++i) {
+            totalScore[i] += basicScore[i];
+
+            for(String url : linkList[i]) {
+                if(index.containsKey(url)) {
+                    totalScore[index.get(url)] += (basicScore[i] / (double) linkList[i].size());
                 }
             }
         }
         return totalScore;
     }
     
-    int getMaxScoreIndex(double[] totalScore) {
+    int maxScorePageIndex(double[] totalScore) {
         double max = totalScore[0];
         int answer = 0;
-        for(int i = 1; i < totalScore.length; ++i) {
+        for(int i = 1; i < pageCnt; ++i) {
             if(max < totalScore[i]) {
                 max = totalScore[i];
                 answer = i;
