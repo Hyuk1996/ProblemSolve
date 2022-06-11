@@ -68,7 +68,7 @@ class Solution {
                 int endX = entry.getValue().get(1).x;
                 int endY = entry.getValue().get(1).y;
 
-                if (canRemoveUsingBruteForce(startX, startY, endX, endY)) {
+                if (canRemoveUsingDFS(startX, startY, endX, endY)) {
                     sb.append(entry.getKey());
                     this.map.remove(entry.getKey());
                     this.grid[startY][startX] = '.';
@@ -82,6 +82,42 @@ class Solution {
             }
         }
         return sb.toString();
+    }
+
+    private boolean canRemoveUsingDFS(int startX, int startY, int endX, int endY) {
+        return dfs(startX, startY, -1, 0, endX, endY);
+    }
+
+    private boolean dfs(int curX, int curY, int dir, int dist, int endX, int endY) {
+        if(curX == endX && curY == endY) {
+            return true;
+        }
+        
+        for(int i = 0; i < 4; ++i) {
+            int nextX = curX + dx[i];
+            int nextY = curY + dy[i];
+            
+            if(nextX < 0 || nextX >= this.n || nextY < 0 || nextY >= this.m) {
+                continue;
+            }
+            
+            if(this.grid[nextY][nextX] != '.' && this.grid[nextY][nextX] != this.grid[endY][endX]) {
+                continue;
+            }
+            
+            int nextDist = dist;
+            if(dir != -1 && dir != i) {
+                nextDist++;
+            }
+            if(nextDist == 2) {
+                continue;
+            }
+            
+            if(dfs(nextX, nextY, i, nextDist, endX, endY)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean canRemoveUsingBruteForce(int startX, int startY, int endX, int endY) {
