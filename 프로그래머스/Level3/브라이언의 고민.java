@@ -1,115 +1,126 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 class Solution {
 
+	private static final String RULE_1_FAIL_EXP_MSG = "Rule 1 적용 불가능";
+	private static final String SPACE = " ";
+	private static final String SPACE_EXP_MSG = "공백이 있으면 안됨.";
 	private static final String INVALID = "invalid";
 
-	private boolean[] isUsed = new boolean[26];
+	private Map<Character, List<Integer>> positions = new HashMap<>();
 
 	public String solution(String sentence) {
-		StringBuilder temp = new StringBuilder();
-		StringBuilder answer = new StringBuilder();
-		List<Integer> indices = new ArrayList<>();
+		try {
+			extractLowerCaseInfo(sentence);
+
+			StringBuilder sb = new StringBuilder();
+			StringBuilder answer = new StringBuilder();
+
+			for (int i = 0; i < sentence.length(); ++i) {
+				char c = sentence.charAt(i);
+				if (Character.isUpperCase(c)) {
+					sb.append(c);
+					continue;
+				}
+
+				List<Integer> position = this.positions.get(c);
+
+				if (position.size() == 2 && position.get(1) - position.get(0) >= 2) { //Rul2
+					if (sb.length() > 0) {
+						answer.append(sb).append(SPACE);
+					}
+					sb.setLength(0);
+
+					String word = sentence.substring(position.get(0) + 1, position.get(1));
+					if (!isValid(word)) {
+						word = decodeUsingRule1(word, position.get(0) + 1, position.get(1) - 1);
+					}
+
+					answer.append(word).append(SPACE);
+					i = position.get(1);
+				} else { //Rule1
+					if (sb.length() > 1) {
+						answer.append(sb.substring(0, sb.length() - 1)).append(SPACE);
+					}
+					if (sb.length() == 0) {
+						throw new IllegalArgumentException(RULE_1_FAIL_EXP_MSG);
+					}
+					sb.setLength(0);
+
+					if (position.get(0) < i || position.get(position.size() - 1) + 1 >= sentence.length()) {
+						throw new IllegalArgumentException(RULE_1_FAIL_EXP_MSG);
+					}
+
+					String word = sentence.substring(position.get(0) - 1, position.get(position.size() - 1) + 2);
+					word = decodeUsingRule1(word, position.get(0) - 1, position.get(position.size() - 1) + 1);
+
+					answer.append(word).append(SPACE);
+					i = position.get(position.size() - 1) + 1;
+				}
+			}
+			if (sb.length() > 0) {
+				answer.append(sb).append(SPACE);
+			}
+			return answer.substring(0, answer.length() - 1);
+		} catch (IllegalArgumentException e) {
+			return INVALID;
+		}
+	}
+
+	private void extractLowerCaseInfo(String sentence) {
 		for (int i = 0; i < sentence.length(); ++i) {
 			char c = sentence.charAt(i);
-			if ('A' <= c && c <= 'Z') {
-				temp.append(c);
-				continue;
+			if (Character.isWhitespace(c)) {
+				throw new IllegalArgumentException(SPACE_EXP_MSG);
 			}
-
-			//특수 문자 중복 불가능
-			if (this.isUsed[c - 'a']) {
-				return INVALID;
-			}
-
-			//특수 문자 위치 정보 구하기.
-			indices.clear();
-			for (int j = i; j < sentence.length(); ++j) {
-				if (sentence.charAt(j) == c) {
-					indices.add(j);
+			if (Character.isLowerCase(c)) {
+				if (this.positions.containsKey(c)) {
+					this.positions.get(c).add(i);
+					continue;
 				}
-			}
-
-			//rule2
-			if ((indices.size() == 2) && (indices.get(1) - indices.get(0) >= 2)) {
-				if (temp.length() > 0) {
-					answer.append(temp).append(" ");
-				}
-				temp.setLength(0);
-
-				isUsed[c - 'a'] = true;
-				String word = sentence.substring(indices.get(0) + 1, indices.get(1));
-
-				if (!isWord(word)) {
-					word = decodeRule1(word);
-					if (word.equals(INVALID)) {
-						return INVALID;
-					}
-				}
-				answer.append(word).append(" ");
-				i = indices.get(1);
-			} else { //rule1
-				//단어간 중복 체크
-				if (temp.length() == 0) {
-					return INVALID;
-				}
-				if (indices.get(indices.size() - 1) == sentence.length() - 1) {
-					return INVALID;
-				}
-
-				if (temp.length() > 1) {
-					answer.append(temp.substring(0, temp.length() - 1)).append(" ");
-				}
-				temp.setLength(0);
-
-				String word = sentence.substring(indices.get(0) - 1, indices.get(indices.size() - 1) + 2);
-				word = decodeRule1(word);
-				if (word.equals(INVALID)) {
-					return INVALID;
-				}
-				answer.append(word).append(" ");
-				i = indices.get(indices.size() - 1) + 1;
+				List<Integer> position = new ArrayList<>();
+				position.add(i);
+				this.positions.put(c, position);
 			}
 		}
-		if (temp.length() > 0) {
-			answer.append(temp).append(" ");
-		}
-		return answer.substring(0, answer.length() - 1);
 	}
 
-	private String decodeRule1(String word) {
-		//word가 Rule1을 만족하려면 길이가 홀수 여야 함.
-		if (word.length() % 2 == 0) {
-			return INVALID;
-		}
-
-		char c = word.charAt(1);
-
-		if (('A' <= c && c <= 'Z') || this.isUsed[c - 'a']) {
-			return INVALID;
-		}
-		
-		this.isUsed[c - 'a'] = true;
+	private boolean isValid(String word) {
 		for (int i = 0; i < word.length(); ++i) {
-			if (i % 2 == 1 && word.charAt(i) != c) {
-				return INVALID;
-			}
-			if (i % 2 == 0) {
-				if ('a' <= word.charAt(i) && word.charAt(i) <= 'z') {
-					return INVALID;
-				}
-			}
-		}
-		return word.replace(String.valueOf(c), "");
-	}
-
-	private boolean isWord(String word) {
-		for (char c : word.toCharArray()) {
-			if ('a' <= c && c <= 'z') {
+			if (Character.isLowerCase(word.charAt(i))) {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	private String decodeUsingRule1(String word, int start, int end) {
+		if (word.length() % 2 == 0) {
+			throw new IllegalArgumentException(RULE_1_FAIL_EXP_MSG);
+		}
+
+		List<Integer> position = this.positions.get(word.charAt(1));
+		if (Objects.isNull(position)) {
+			throw new IllegalArgumentException(RULE_1_FAIL_EXP_MSG);
+		}
+
+		if (position.get(0) != (start + 1) || position.get(position.size() - 1) != (end - 1)) {
+			throw new IllegalArgumentException(RULE_1_FAIL_EXP_MSG);
+		}
+
+		char c = word.charAt(1);
+		for (int i = 0; i < word.length(); ++i) {
+			if (i % 2 == 1 && word.charAt(i) != c) {
+				throw new IllegalArgumentException(RULE_1_FAIL_EXP_MSG);
+			}
+			if (i % 2 == 0 && Character.isLowerCase(word.charAt(i))) {
+				throw new IllegalArgumentException(RULE_1_FAIL_EXP_MSG);
+			}
+		}
+		return word.replace(String.valueOf(c), "");
 	}
 }
