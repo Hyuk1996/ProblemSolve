@@ -3,72 +3,67 @@ class Solution {
     int[] dr = {-1, 0, 1, 0};
     int[] dc = {0, -1, 0, 1};
     
-    static class Result {
-        boolean win;
-        int count;
-        
-        Result(boolean win, int count) {
-            this.win = win;
-            this.count = count;
-        }
+    public int solution(int[][] board, int[] aloc, int[] bloc) {   
+        return game(board, aloc, bloc, 0).count;
     }
     
-    public int solution(int[][] board, int[] aloc, int[] bloc) {
-        Result result = game(board, aloc[0], aloc[1], bloc[0], bloc[1], 0);
-        return result.count;
-    }
-    
-    Result game(int[][] board, int myR, int myC, int otherR, int otherC, int curCount) {    
-        //base case
-        if (isGameEnd(board, myR, myC)) {
-            return new Result(false, curCount);
+    Result game(int[][] board, int[] myloc, int[] enemyloc, int count) {
+        if (isPlayerLose(board, myloc)) {
+            return new Result(false, count);
         }
         
-        boolean win = false;
-        int maxCount = Integer.MIN_VALUE;
+        boolean isWin = false;
         int minCount = Integer.MAX_VALUE;
+        int maxCount = Integer.MIN_VALUE;
         
         for (int i = 0; i < 4; ++i) {
-            int nextR = myR + dr[i];
-            int nextC = myC + dc[i];
-                
-            if (canMove(board, nextR, nextC)) {
-                board[myR][myC] = 0;
-                Result result = game(board, otherR, otherC, nextR, nextC, curCount + 1);
-                board[myR][myC] = 1;
-                    
-                win |= (!result.win);
-                
-                if (!result.win) {
-                    minCount = Math.min(minCount, result.count);
+            int nextR = myloc[0] + dr[i];
+            int nextC = myloc[1] + dc[i];
+            if (isValidLoc(board, nextR, nextC)) {
+                board[myloc[0]][myloc[1]] = 0;
+                Result enemyResult = game(board, enemyloc, new int[]{nextR, nextC}, count + 1);
+                board[myloc[0]][myloc[1]] = 1;
+                        
+                isWin |= !enemyResult.isWin;
+                if (!enemyResult.isWin) {
+                    minCount = Math.min(minCount, enemyResult.count);
                 } else {
-                    maxCount = Math.max(maxCount, result.count);
+                    maxCount = Math.max(maxCount, enemyResult.count);
                 }
             }
         }
-
-        return new Result(win, win ? minCount : maxCount);
+        
+        return new Result(isWin, isWin ? minCount : maxCount);
     }
     
-    boolean isGameEnd(int[][] board, int r, int c) {
-        if (board[r][c] == 0) {
+    boolean isPlayerLose(int[][] board, int[] loc) {
+        //현재 발판 없음
+        if (board[loc[0]][loc[1]] == 0) {
             return true;
         }
         
+        //더 이상 이동할 수 없음
         for (int i = 0; i < 4; ++i) {
-            int nextR = r + dr[i];
-            int nextC = c + dc[i];
-            if (canMove(board, nextR, nextC)) {
+            int nextR = loc[0] + dr[i];
+            int nextC = loc[1] + dc[i];
+            if (isValidLoc(board, nextR, nextC)) {
                 return false;
             }
         }
         return true;
     }
     
-    boolean canMove(int[][] board, int r, int c) {
-        if (r < 0 || r >= board.length || c < 0 || c >= board[0].length || board[r][c] == 0) {
-            return false;
-        }
-        return true;
+    boolean isValidLoc(int[][] board, int r, int c) {
+        return 0 <= r && r < board.length && 0 <= c && c < board[0].length && board[r][c] == 1;
     }
+    
+    static class Result {
+        boolean isWin;
+        int count;
+        
+        Result(boolean isWin, int count) {
+            this.isWin = isWin;
+            this.count = count;
+        }
+    } 
 }
