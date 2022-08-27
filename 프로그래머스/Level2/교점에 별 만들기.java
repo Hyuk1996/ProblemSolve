@@ -3,9 +3,13 @@ import java.util.*;
 class Solution {
     public String[] solution(int[][] line) {
 
-        List<Pos> list = new ArrayList<>();
+        Set<Pos> intersection = getIntersection(line);
+        return printIntersection(intersection);
+    }
 
-        //1. 좌표 구하기
+    private Set<Pos> getIntersection(int[][] line) {
+        
+        Set<Pos> intersection = new HashSet<>();
         for (int i = 0; i < line.length; ++i) {
             long A = line[i][0];
             long B = line[i][1];
@@ -26,16 +30,18 @@ class Solution {
               
                 long x = xMolecule / denominator;
                 long y = yMolecule / denominator;
-                Pos pos = new Pos(x, y);
-
-                list.add(pos);
+                
+                intersection.add(new Pos(x, y));
             }
         }
-
+        return intersection;
+    }
+    
+    private String[] printIntersection(Set<Pos> intersection) {
         //출력 격자 범위 정하기
         long minY = Long.MAX_VALUE;
         long minX = Long.MAX_VALUE;
-        for (Pos p : list) {
+        for (Pos p : intersection) {
             if (minY > p.y) {
                 minY = p.y;
             }
@@ -46,7 +52,7 @@ class Solution {
 
         long maxY = Long.MIN_VALUE;
         long maxX = Long.MIN_VALUE;
-        for (Pos p : list) {
+        for (Pos p : intersection) {
             p.y -= minY;
             p.x -= minX;
 
@@ -57,8 +63,7 @@ class Solution {
                 maxX = p.x;
             }
         }
-        
-        //격자 채우기
+
         char[][] grid = new char[(int)maxY + 1][(int)maxX + 1];
 
         for (int y = 0; y < maxY + 1; ++y) {
@@ -66,7 +71,7 @@ class Solution {
                 grid[y][x] = '.';
             }
         }
-        for (Pos p : list) {
+        for (Pos p : intersection) {
             grid[(int)p.y][(int)p.x] = '*';
         }
 
@@ -76,7 +81,7 @@ class Solution {
         }
         return answer;
     }
-
+    
     static class Pos {
         long x, y;
 
@@ -84,5 +89,20 @@ class Solution {
             this.x = x;
             this.y = y;
         }
+        
+        @Override
+		public boolean equals(final Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+			final Pos pos = (Pos)o;
+			return x == pos.x && y == pos.y;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(x, y);
+		}
     }
 }
