@@ -1,188 +1,178 @@
 import java.util.*;
 
 class Solution {
-    
-    int size;
-    
-    final int[] dr = {-1, 1, 0, 0};
-    final int[] dc = {0, 0, -1, 1};
-    
+
+    private int[] dr = {-1, 0, 1, 0};
+    private int[] dc = {0, -1, 0, 1};
+
     public int solution(int[][] game_board, int[][] table) {
 
-        size = game_board.length;
+        List<List<int[]>> blocks = findBlocks(table);
+        List<List<int[]>> emptyBlocks = findEmptyBlocks(game_board);
         
-        List<List<Pos>> emptyBlocks = findEmptyBlocks(game_board);
-        List<List<Pos>> blocks = findBlocks(table);
-        
-        //emptyBlocks 미리 좌표 조절. (비교 편의 위해)
-        setEmptyBlocksPos(emptyBlocks);
-        
-        //비교시작
+        //블록 하나씩 게임보드에 채우기
         int answer = 0;
-        for(List<Pos> block : blocks) {
-            for(int i = 0; i < emptyBlocks.size(); ++i) {
-                if(check(block, emptyBlocks.get(i))) {
-                    answer += block.size();
-                    emptyBlocks.remove(i);
+        for (List<int[]> block : blocks) {
+            for (List<int[]> emptyBlock : emptyBlocks) {
+                if (isSameBlock(block, emptyBlock)) {
+                    answer += emptyBlock.size();
+                    emptyBlocks.remove(emptyBlock);
                     break;
                 }
             }
         }
-        
+
         return answer;
     }
-    
-    List<List<Pos>> findEmptyBlocks(int[][] game_board) {
-        List<List<Pos>> emptyBlocks = new ArrayList<>();
+
+    private List<List<int[]>> findBlocks(int[][] table) {
         
-        for(int i = 0; i < size; ++i) {
-            for(int j = 0; j < size; ++j) {
-                if(game_board[i][j] == 0) {
-                    List<Pos> emptyBlock = new ArrayList<>();
-                    gameBoardDfs(game_board, emptyBlock, i, j);
-                    emptyBlocks.add(emptyBlock);
+        List<List<int[]>> blocks = new ArrayList<>();
+        for (int r = 0; r < table.length; ++r) {
+            for (int c = 0; c < table[0].length; ++c) {
+                if (table[r][c] == 1) {
+                    List<int[]> block = new ArrayList<>();
+                    tableDfs(table, r, c, block);
+                    blocks.add(arrangeBlockPos(block));
                 }
             }
         }
-        return emptyBlocks;
-    }
-    
-    void gameBoardDfs(int[][] game_board, List<Pos> block, int r, int c) {
-        game_board[r][c] = 1;
-        block.add(new Pos(r, c));
         
-        for(int i = 0; i < 4; ++i) {
-            int nextR = r + dr[i];
-            int nextC = c + dc[i];
-            
-            if(nextR < 0 || nextR >= size || nextC < 0 || nextC >= size) {
-                continue;
-            }
-            if(game_board[nextR][nextC] == 1) {
-                continue;
-            }
-            gameBoardDfs(game_board, block, nextR, nextC);
-        }
-    }
-    
-    List<List<Pos>> findBlocks(int[][] table) {
-        List<List<Pos>> blocks = new ArrayList<>();
-        
-        for(int i = 0; i < size; ++i) {
-            for(int j = 0; j < size; ++j) {
-                if(table[i][j] == 1) {
-                    List<Pos> block = new ArrayList<>();
-                    tableDfs(table, block, i, j);
-                    blocks.add(block);
-                }
-            }
-        }
         return blocks;
     }
     
-    void tableDfs(int[][] table, List<Pos> block, int r, int c) {
+    private void tableDfs(int[][] table, int r, int c, List<int[]> block) {
         table[r][c] = 0;
-        block.add(new Pos(r, c));
-        for(int i = 0; i < 4; ++i) {
+        block.add(new int[]{r, c});
+
+        for (int i = 0; i < 4; ++i) {
             int nextR = r + dr[i];
             int nextC = c + dc[i];
-            
-            if(nextR < 0 || nextR >= size || nextC < 0 || nextC >= size) {
+
+            if (nextR < 0 || nextR >= table.length || nextC < 0 || nextC >= table[0].length) {
                 continue;
             }
-            if(table[nextR][nextC] == 0) {
+            if (table[nextR][nextC] == 0) {
                 continue;
             }
-            tableDfs(table, block, nextR, nextC);
+
+            tableDfs(table, nextR, nextC, block);
         }
     }
     
-    void setEmptyBlocksPos(List<List<Pos>> emptyBlocks) {
-        for(List<Pos> emptyBlock : emptyBlocks) {
-            int minR = 50;
-            int minC = 50;
-            for(Pos p : emptyBlock) {
-                minR = Math.min(minR, p.r);
-                minC = Math.min(minC, p.c);
+    private List<List<int[]>> findEmptyBlocks(int[][] game_board) {
+        
+        List<List<int[]>> emptyBlocks = new ArrayList<>();
+        for (int r = 0; r < game_board.length; ++r) {
+            for (int c = 0; c < game_board[0].length; ++c) {
+                if (game_board[r][c] == 0) {
+                    List<int[]> emptyBlock = new ArrayList<>();
+                    gameBoardDfs(game_board, r, c, emptyBlock);
+                    emptyBlocks.add(arrangeBlockPos(emptyBlock));
+                }
             }
-            
-            for(Pos p : emptyBlock) {
-                p.r -= minR;
-                p.c -= minC;
-            }
-        }    
+        }
+        
+        return emptyBlocks;
     }
     
-    boolean check(List<Pos> block, List<Pos> emptyBlock) {
+    private void gameBoardDfs(int[][] board, int r, int c, List<int[]> emptyBlock) {
+        board[r][c] = 1;
+        emptyBlock.add(new int[]{r, c});
+
+        for (int i = 0; i < 4; ++i) {
+            int nextR = r + dr[i];
+            int nextC = c + dc[i];
+
+            if (nextR < 0 || nextR >= board.length || nextC < 0 || nextC >= board[0].length) {
+                continue;
+            }
+            if (board[nextR][nextC] == 1) {
+                continue;
+            }
+
+            gameBoardDfs(board, nextR, nextC, emptyBlock);
+        }
+    }
+
+    private List<int[]> arrangeBlockPos(List<int[]> block) {
+        int minR = Integer.MAX_VALUE;
+        int minC = Integer.MAX_VALUE;
+        for (int[] pos : block) {
+            if (minR > pos[0]) {
+                minR = pos[0];
+            }
+            if (minC > pos[1]) {
+                minC = pos[1];
+            }
+        }
+        
+        for (int[] pos : block) {
+            pos[0] -= minR;
+            pos[1] -= minC;
+        }
+        
+        return block;
+    }
+    
+    private boolean isSameBlock(List<int[]> block, List<int[]> emptyBlock) {
+        
         if(block.size() != emptyBlock.size()) {
             return false;
         }
         
-        //block 좌표 조정
-        int minR = 50;
-        int minC = 50;
-        for(Pos p : block) {
-            minR = Math.min(minR, p.r);
-            minC = Math.min(minC, p.c);
-        }
-        
-        int maxR = -1;
-        int maxC = -1;
-        for(Pos p : block) {
-            p.r -= minR;
-            p.c -= minC;
-            
-            maxR = Math.max(maxR, p.r);
-            maxC = Math.max(maxC, p.c);
-        }
-        
-        //block의 회전을 구현하기 위해, block을 사각형에 넣기 
-        int[][] squareBlock = new int[maxR + 1][maxC + 1];
-        for(Pos p : block) {
-            squareBlock[p.r][p.c] = 1;
-        }
-        
-        //블록을 회전하면서 게임 보드에 널 수 있는 체크
-        for(int i = 0; i < 4; ++i) {
-            if(compare(squareBlock, emptyBlock)) {
+        boolean[][] emptyBlockGrid = makeGrid(emptyBlock);
+        boolean[][] blockGrid = makeGrid(block);
+
+        for (int i = 0; i < 4; ++i) {
+            if (isSameGrid(blockGrid, emptyBlockGrid)) {
                 return true;
             }
-            squareBlock = rotate(squareBlock);
+            
+            //rotate
+            boolean[][] tmpGrid = new boolean[blockGrid[0].length][blockGrid.length];
+            for (int r = 0; r < blockGrid.length; ++r) {
+                for (int c = 0; c < blockGrid[0].length; ++c) {
+                    tmpGrid[c][blockGrid.length - 1 - r] = blockGrid[r][c];
+                }
+            }
+            blockGrid = tmpGrid;
         }
-        
         return false;
     }
+
+    private boolean[][] makeGrid(List<int[]> poses) {
     
-    int[][] rotate(int[][] block) {
-        int rSize = block.length;
-        int cSize = block[0].length;
-        
-        int[][] rotateBlock = new int[cSize][rSize];
-        for(int c = 0; c < cSize; ++c) {
-            for(int r = 0; r < rSize; ++r) {
-                rotateBlock[c][rSize - 1 - r] = block[r][c];
+        int maxR = Integer.MIN_VALUE;
+        int maxC = Integer.MIN_VALUE;
+        for (int[] pos : poses) {
+            if (maxR < pos[0]) {
+                maxR = pos[0];
+            }
+            if (maxC < pos[1]) {
+                maxC = pos[1];
             }
         }
-        return rotateBlock;
+        
+        boolean[][] grid = new boolean[maxR + 1][maxC + 1];
+        for (int[] pos : poses) {
+            grid[pos[0]][pos[1]] = true;
+        }
+        return grid;
     }
     
-    boolean compare(int[][] block, List<Pos> emptyBlock) {
-        for(Pos p : emptyBlock) {
-            if(p.r < 0 || p.r >= block.length || p.c < 0 || p.c >= block[0].length) {
-                return false;
-            }
-            if(block[p.r][p.c] == 0) {
-                return false;
+    private boolean isSameGrid(boolean[][] grid1, boolean[][] grid2) {
+        if (grid1.length != grid2.length || grid1[0].length != grid2[0].length) {
+            return false;
+        }
+        
+        for (int r = 0; r < grid1.length; ++r) {
+            for (int c = 0; c < grid1[0].length; ++c) {
+                if (grid1[r][c] != grid2[r][c]) {
+                    return false;
+                }
             }
         }
         return true;
-    }
-    
-    class Pos {
-        int r, c;
-        Pos(int r, int c) {
-            this.r = r;
-            this.c = c;
-        }
     }
 }
