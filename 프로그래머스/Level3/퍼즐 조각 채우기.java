@@ -7,15 +7,15 @@ class Solution {
 
     public int solution(int[][] game_board, int[][] table) {
 
-        List<List<int[]>> blocks = findBlocks(table);
-        List<List<int[]>> emptyBlocks = findEmptyBlocks(game_board);
+        List<boolean[][]> blocks = findBlocks(table);
+        List<boolean[][]> emptyBlocks = findEmptyBlocks(game_board);
         
         //블록 하나씩 게임보드에 채우기
         int answer = 0;
-        for (List<int[]> block : blocks) {
-            for (List<int[]> emptyBlock : emptyBlocks) {
+        for (boolean[][] block : blocks) {
+            for (boolean[][] emptyBlock : emptyBlocks) {
                 if (isSameBlock(block, emptyBlock)) {
-                    answer += emptyBlock.size();
+                    answer += getBlockSize(emptyBlock);
                     emptyBlocks.remove(emptyBlock);
                     break;
                 }
@@ -25,15 +25,15 @@ class Solution {
         return answer;
     }
 
-    private List<List<int[]>> findBlocks(int[][] table) {
+    private List<boolean[][]> findBlocks(int[][] table) {
         
-        List<List<int[]>> blocks = new ArrayList<>();
+        List<boolean[][]> blocks = new ArrayList<>();
         for (int r = 0; r < table.length; ++r) {
             for (int c = 0; c < table[0].length; ++c) {
                 if (table[r][c] == 1) {
                     List<int[]> block = new ArrayList<>();
-                    tableDfs(table, r, c, block);
-                    blocks.add(arrangeBlockPos(block));
+                    dfs(table, r, c, block, 0);
+                    blocks.add(posToGrid(block));
                 }
             }
         }
@@ -41,34 +41,15 @@ class Solution {
         return blocks;
     }
     
-    private void tableDfs(int[][] table, int r, int c, List<int[]> block) {
-        table[r][c] = 0;
-        block.add(new int[]{r, c});
-
-        for (int i = 0; i < 4; ++i) {
-            int nextR = r + dr[i];
-            int nextC = c + dc[i];
-
-            if (nextR < 0 || nextR >= table.length || nextC < 0 || nextC >= table[0].length) {
-                continue;
-            }
-            if (table[nextR][nextC] == 0) {
-                continue;
-            }
-
-            tableDfs(table, nextR, nextC, block);
-        }
-    }
-    
-    private List<List<int[]>> findEmptyBlocks(int[][] game_board) {
+    private List<boolean[][]> findEmptyBlocks(int[][] game_board) {
         
-        List<List<int[]>> emptyBlocks = new ArrayList<>();
+        List<boolean[][]> emptyBlocks = new ArrayList<>();
         for (int r = 0; r < game_board.length; ++r) {
             for (int c = 0; c < game_board[0].length; ++c) {
                 if (game_board[r][c] == 0) {
                     List<int[]> emptyBlock = new ArrayList<>();
-                    gameBoardDfs(game_board, r, c, emptyBlock);
-                    emptyBlocks.add(arrangeBlockPos(emptyBlock));
+                    dfs(game_board, r, c, emptyBlock, 1);
+                    emptyBlocks.add(posToGrid(emptyBlock));
                 }
             }
         }
@@ -76,26 +57,27 @@ class Solution {
         return emptyBlocks;
     }
     
-    private void gameBoardDfs(int[][] board, int r, int c, List<int[]> emptyBlock) {
-        board[r][c] = 1;
-        emptyBlock.add(new int[]{r, c});
+    private void dfs(int[][] map, int r, int c, List<int[]> block, int mode) {
+        //mode 0 : table, 1 : game_board
+        map[r][c] = mode;
+        block.add(new int[]{r, c});
 
         for (int i = 0; i < 4; ++i) {
             int nextR = r + dr[i];
             int nextC = c + dc[i];
 
-            if (nextR < 0 || nextR >= board.length || nextC < 0 || nextC >= board[0].length) {
+            if (nextR < 0 || nextR >= map.length || nextC < 0 || nextC >= map[0].length) {
                 continue;
             }
-            if (board[nextR][nextC] == 1) {
+            if (map[nextR][nextC] == mode) {
                 continue;
             }
 
-            gameBoardDfs(board, nextR, nextC, emptyBlock);
+            dfs(map, nextR, nextC, block, mode);
         }
     }
 
-    private List<int[]> arrangeBlockPos(List<int[]> block) {
+    private boolean[][] posToGrid(List<int[]> block) {
         int minR = Integer.MAX_VALUE;
         int minC = Integer.MAX_VALUE;
         for (int[] pos : block) {
@@ -107,45 +89,12 @@ class Solution {
             }
         }
         
+        int maxR = Integer.MIN_VALUE;
+        int maxC = Integer.MIN_VALUE;
         for (int[] pos : block) {
             pos[0] -= minR;
             pos[1] -= minC;
-        }
-        
-        return block;
-    }
-    
-    private boolean isSameBlock(List<int[]> block, List<int[]> emptyBlock) {
-        
-        if(block.size() != emptyBlock.size()) {
-            return false;
-        }
-        
-        boolean[][] emptyBlockGrid = makeGrid(emptyBlock);
-        boolean[][] blockGrid = makeGrid(block);
-
-        for (int i = 0; i < 4; ++i) {
-            if (isSameGrid(blockGrid, emptyBlockGrid)) {
-                return true;
-            }
             
-            //rotate
-            boolean[][] tmpGrid = new boolean[blockGrid[0].length][blockGrid.length];
-            for (int r = 0; r < blockGrid.length; ++r) {
-                for (int c = 0; c < blockGrid[0].length; ++c) {
-                    tmpGrid[c][blockGrid.length - 1 - r] = blockGrid[r][c];
-                }
-            }
-            blockGrid = tmpGrid;
-        }
-        return false;
-    }
-
-    private boolean[][] makeGrid(List<int[]> poses) {
-    
-        int maxR = Integer.MIN_VALUE;
-        int maxC = Integer.MIN_VALUE;
-        for (int[] pos : poses) {
             if (maxR < pos[0]) {
                 maxR = pos[0];
             }
@@ -155,13 +104,37 @@ class Solution {
         }
         
         boolean[][] grid = new boolean[maxR + 1][maxC + 1];
-        for (int[] pos : poses) {
+        for (int[] pos : block) {
             grid[pos[0]][pos[1]] = true;
         }
         return grid;
     }
     
-    private boolean isSameGrid(boolean[][] grid1, boolean[][] grid2) {
+    private int getBlockSize(boolean[][] block) {
+        int blockCnt = 0;
+        for (int r = 0; r < block.length; ++r) {
+            for (int c = 0; c < block[0].length; ++c) {
+                if (block[r][c]) {
+                    ++blockCnt;
+                }
+            }
+        }
+        return blockCnt;
+    }
+    
+    private boolean isSameBlock(boolean[][] block, boolean[][] emptyBlock) {
+        
+        for (int i = 0; i < 4; ++i) {
+            if (compare(block, emptyBlock)) {
+                return true;
+            }
+            
+            block = rotate(block);
+        }
+        return false;
+    }
+    
+    private boolean compare(boolean[][] grid1, boolean[][] grid2) {
         if (grid1.length != grid2.length || grid1[0].length != grid2[0].length) {
             return false;
         }
@@ -174,5 +147,15 @@ class Solution {
             }
         }
         return true;
+    }
+
+    private boolean[][] rotate(boolean[][] block) {
+        boolean[][] tmp = new boolean[block[0].length][block.length];
+        for (int r = 0; r < block.length; ++r) {
+            for (int c = 0; c < block[0].length; ++c) {
+                tmp[c][block.length - 1 - r] = block[r][c];
+            }
+        }
+        return tmp;
     }
 }
