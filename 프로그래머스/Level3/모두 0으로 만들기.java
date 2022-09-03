@@ -2,78 +2,61 @@ import java.util.*;
 
 class Solution {
 
-    List<List<Integer>> graph;
-    long[] vertexW;
-    boolean[] isVisited;
-
-    long answer = 0;
+    private List<List<Integer>> tree;
+    private long answer = 0;
+    private long [] weights;
+    private boolean[] isVisited;
 
     public long solution(int[] a, int[][] edges) {
 
-        if(!canMakeZero(a)) {
+        weights = Arrays.stream(a).mapToLong(i -> (long)i).toArray();
+
+        //모든 정점의 가중치를 0으로 만들 수 있는지 판별
+        if (Arrays.stream(weights).sum() != 0L) {
             return -1;
         }
 
-        makeGraph(a.length, edges);
-        vertexW = copyA(a);
-
-        //dfs 이용해 모든 트리 정점 0으로 만들기
-        isVisited = new boolean[a.length];
+        //그래프 구현
+        tree = setTree(a.length, edges);
+        
+        isVisited = new boolean[tree.size()];
         dfs(0);
 
         return answer;
     }
-
-    boolean canMakeZero(int[] a) {
-        long sum = 0;
-        for(int i = 0; i < a.length; ++i) {
-            sum += a[i];
+    
+    private List<List<Integer>> setTree(int vertexCnt, int[][] edges) {
+        
+        List<List<Integer>> tree = new ArrayList<>();
+        for (int i = 0; i < vertexCnt; ++i) {
+            tree.add(new ArrayList<>());
         }
-        return sum == 0;
+        for (int[] edge : edges) {
+            int u = edge[0];
+            int v = edge[1];
+
+            tree.get(u).add(v);
+            tree.get(v).add(u);
+        }
+        return tree;
     }
 
-    void makeGraph(int n, int[][] edges) {
-        graph = new ArrayList<>();
-        for(int i = 0; i < n; ++i) {
-            graph.add(new ArrayList<>());
-        }
+    private void dfs(int v) {
 
-        int u, v;
-        for(int i = 0; i < edges.length; ++i) {
-            u = edges[i][0];
-            v = edges[i][1];
-            graph.get(u).add(v);
-            graph.get(v).add(u);
-        }
-    }
-
-    long[] copyA(int[] a) {
-        long[] tmp = new long[a.length];
-        for(int i = 0; i < a.length; ++i) {
-            tmp[i] = (long) a[i];
-        }
-        return tmp;
-    }
-
-    void dfs(int v) {
         isVisited[v] = true;
-        int parent = -1;
-        for(int i = 0; i < graph.get(v).size(); ++i) {
-            int adjV = graph.get(v).get(i);
-            if(isVisited[adjV]) {
-                parent = adjV;
-                continue;
-            }
-            dfs(adjV);
-        }
 
-        if(parent == -1) { //부모가 없는 경우(루트노드)
-            return;
-        }
+        for (int i = 0; i < tree.get(v).size(); ++i) {
+            int adjV = tree.get(v).get(i);
 
-        answer += Math.abs(vertexW[v]);
-        vertexW[parent] += vertexW[v];
-        vertexW[v] = 0;
+            if (!isVisited[adjV]) {
+                
+                dfs(adjV);
+                
+                answer += Math.abs(weights[adjV]);
+                weights[v] += weights[adjV];
+                weights[adjV] = 0;
+            }       
+        }
     }
 }
 
