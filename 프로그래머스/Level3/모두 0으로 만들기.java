@@ -60,98 +60,78 @@ class Solution {
     }
 }
 
-//위상 정렬 이용
+/* bfs 활용 */
 import java.util.*;
 
 class Solution {
     
-    ArrayList<Integer>[] graph;
-    int[] edgeCnt;
-    long[] weights;
+    private long[] weights;
+    private List<List<Integer>> tree;
+    private int[] outDegree;
     
     public long solution(int[] a, int[][] edges) {
         
-        //가중치들을 0으로 만들 수 없는 경우
-        if(Arrays.stream(a).sum() != 0) {
+        weights = Arrays.stream(a).mapToLong(i -> (long)i).toArray();
+        if (Arrays.stream(weights).sum() != 0L) {
             return -1;
         }
         
-        graph = makeGraph(a.length, edges);
-        edgeCnt = init(); //위상정렬을 위한 정보
-        weights = intToLong(a);
+        setTreeAndOutDegree(edges);
         
-        //위상정렬 순서대로 가중치 분산
-        return topologicalSort();
+        return makeWeightToZero();
     }
     
-    ArrayList<Integer>[] makeGraph(int n, int[][] edges) {
-        ArrayList<Integer>[] graph = new ArrayList[n];
-        for(int i = 0; i < n; ++i) {
-            graph[i] = new ArrayList<>();
-        }
+    private void setTreeAndOutDegree(int[][] edges) {
+        outDegree = new int[weights.length];
         
-        int u, v;
-        for(int i = 0; i < edges.length; ++i) {
-            u = edges[i][0];
-            v = edges[i][1];
+        tree = new ArrayList<>();
+        for (int i = 0; i < weights.length; ++i) {
+            tree.add(new ArrayList<>());
+        }
+        for (int[] edge : edges) {
+            int u = edge[0];
+            int v = edge[1];
             
-            graph[u].add(v);
-            graph[v].add(u);
-        }
-        return graph;
+            tree.get(u).add(v);
+            tree.get(v).add(u);
+            
+            outDegree[u]++;
+            outDegree[v]++;
+        } 
     }
     
-    long[] intToLong(int[] a) {
-        long[] weights = new long[a.length];
-        for(int i = 0; i < a.length; ++i) {
-            weights[i] = a[i];
-        }
-        return weights;
-    }
-    
-    int[] init() {
-        int[] edgeCnt = new int[graph.length];
-        for(int i = 0; i < graph.length; ++i) {
-            edgeCnt[i] = graph[i].size();
-        }
-        return edgeCnt;
-    }
-    
-    long topologicalSort() {
+    private long makeWeightToZero() {
+        //위상 정렬 아이디어 활용
+        boolean[] isVisited = new boolean[weights.length];
+        Queue<Integer> q = new ArrayDeque<>();
+        long answer = 0;
         
-        Queue<Integer> q = new LinkedList<>();
-        boolean[] isVisited = new boolean[graph.length];
-        long moveCnt = 0;
-        
-        for(int i = 0; i < edgeCnt.length; ++i) {
-            if(edgeCnt[i] == 1) {
-                q.add(i);
+        for (int i = 0; i < outDegree.length; ++i) {
+            if (outDegree[i] == 1) {
+                q.offer(i);
             }
         }
         
-        while(!q.isEmpty()) {
-            int from = q.poll();
-            isVisited[from] = true;
+        while (!q.isEmpty()) {
+            int v = q.poll();
+            isVisited[v] = true;
             
-            for(int i = 0; i < graph[from].size(); ++i) {
-                int to = graph[from].get(i);
-                if(isVisited[to]) {
+            for (int i = 0; i < tree.get(v).size(); ++i) {
+                int adjV = tree.get(v).get(i);
+                if (isVisited[adjV]) {
                     continue;
                 }
                 
-                //가중치 분산
-                edgeCnt[to]--;
-                weights[to] += weights[from];
-                moveCnt += Math.abs(weights[from]);
-                weights[from] = 0;
+                weights[adjV] += weights[v];
+                answer += Math.abs(weights[v]);
+                weights[v] = 0;
                 
-                if(edgeCnt[to] == 1) {
-                    q.add(to);
+                outDegree[adjV]--;
+                if (outDegree[adjV] == 1) {
+                    q.offer(adjV);
                 }
             }
         }
-        
-        return moveCnt;
+        return answer;
     }
-    
 }
