@@ -1,47 +1,45 @@
-import java.util.*;
-
 class Solution {
+    
+    private static final String ONE_ONE_ZERO = "110";
+    private static final char ZERO = '0';
+    
     public String[] solution(String[] s) {
         
         String[] answer = new String[s.length];
-        int idx = 0;
-        
-        for(String x : s) {
-            answer[idx++] = updateX(x);
+        for (int i = 0; i < s.length; ++i) {
+            String x = s[i];
+            answer[i] = renewX(x);
         }
-        
         return answer;
     }
     
-    String updateX(String x) {
-        StringBuilder sb = new StringBuilder();
-        StringBuilder tmp = new StringBuilder();
-        for(int i = 0; i < x.length(); ++i) {
-            sb.append(x.charAt(i));
-            
-            if(sb.length() >= 3) {
-                if(sb.substring(sb.length() - 3, sb.length()).equals("110")) {
-                    sb.delete(sb.length() - 3, sb.length());
-                    tmp.append("110");
+    private String renewX(String x) {
+        
+        StringBuilder newX = new StringBuilder();
+        int cnt = 0;
+
+        //"110" 제거하기
+        for (char c : x.toCharArray()) {
+            newX.append(c);
+                
+            if (newX.length() >= 3) {
+                if (newX.indexOf(ONE_ONE_ZERO, newX.length() - 3) != -1) {
+                    newX.delete(newX.length() - 3, newX.length());
+                    cnt++;
                 }
             }
         }
         
-        int index = -1;
-        for(int i = sb.length() - 1; i >= 0; --i) {
-            if(sb.charAt(i) == '0') {
-                index = i + 1;
+        //"110" 규칙에 맞게 삽입하기
+        int insertIdx = 0;
+        for (int j = newX.length() - 1; j >= 0; j--) {
+            if (newX.charAt(j) == ZERO) {
+                insertIdx = j + 1;
                 break;
             }
         }
         
-        
-        if(index != -1) {
-            sb.insert(index, tmp.toString());
-        } else {
-            sb.insert(0, tmp.toString());
-        }
-        return sb.toString();
+        newX.insert(insertIdx, ONE_ONE_ZERO.repeat(cnt));
+        return newX.toString();
     }
-    
 }
