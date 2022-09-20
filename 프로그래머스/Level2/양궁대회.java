@@ -1,85 +1,82 @@
+/* dfs 이용한 완탐 */
 class Solution {
     
+    int[] apeach;
     int[] answer = new int[11];
-    int maxScoreDiff = 0; 
+    int maxScoreDiff = 0;
     
     public int[] solution(int n, int[] info) {
         
-        int[] lionInfo = new int[11];
-        getLionInfo(info, lionInfo, 0, n);
+        apeach = info;
+        game(n, 0, new int[11]);
         
-        if(maxScoreDiff == 0) {
-            return new int[] {-1};
+        if (maxScoreDiff == 0) {
+            return new int[]{-1};
         }
         return answer;
     }
     
-    void getLionInfo(int[] info, int[] lionInfo, int idx, int n) {
-        //base case
-        if(n == 0) {
-            //점수차 계산하기
-            int scoreDiff = calScore(info, lionInfo);
-            if(scoreDiff > 0) {
-                if(scoreDiff > maxScoreDiff) {
-                    maxScoreDiff = scoreDiff;
-                    updateAnswer(lionInfo);
-                } else if(scoreDiff == maxScoreDiff) {
-                    if(isUpdate(lionInfo)) {
-                        updateAnswer(lionInfo);
-                    }
-                }
+    private void game(int arrowCnt, int depth, int[] lion) {
+        if (depth == 11) {
+            lion[depth - 1] += arrowCnt;
+            
+            int scoreDiff = getScoreDiff(lion);
+            
+            if (isNewAnswer(lion, scoreDiff)) {
+                updateAnswer(lion, scoreDiff);
             }
+            lion[depth - 1] -= arrowCnt;
             return;
         }
         
-        //가능한 점수 조합 구하기
-        for(int i = idx; i < 11; ++i) {
-            if(i < 10) {
-                if(info[i] < n) {
-                    lionInfo[i] = info[i] + 1;
-                    getLionInfo(info, lionInfo, i + 1, n - (info[i] + 1));
-                    lionInfo[i] = 0;
+        /* 라이언은 두 가지 경우를 선택할 수 있다. 1. 점수 획득 o 2. 점수 획득 x */
+        
+        if (apeach[depth] < arrowCnt) {
+            lion[depth] = apeach[depth] + 1;
+            game(arrowCnt - lion[depth], depth + 1, lion);
+            lion[depth] = 0;
+        }
+        
+        game(arrowCnt, depth + 1, lion);
+    }
+    
+    private int getScoreDiff(int[] lion) {
+        int scoreDiff = 0;
+        for (int i = 0; i < lion.length; ++i) {
+            if (apeach[i] < lion[i]) {
+                scoreDiff += 10 - i;
+            } else {
+                if (apeach[i] > 0) {
+                    scoreDiff -= 10 - i;
                 }
-            } else {
-                lionInfo[i] = n;
-                getLionInfo(info, lionInfo, i + 1, n - lionInfo[i]);
-                lionInfo[i] = 0;
             }
         }
+        return scoreDiff;
     }
     
-    int calScore(int[] info, int[] lionInfo) {
-        int apache = 0;
-        int lion = 0;
-        for(int i = 0; i < 11; ++i) {
-            if(info[i] == 0 && lionInfo[i] == 0) {
-                continue;
-            }
-            
-            if(info[i] < lionInfo[i]) {
-                lion += (10 - i);
-            } else {
-                apache += (10 - i);
-            }
-        }
-        return lion - apache;
-    }
-    
-    void updateAnswer(int[] lionInfo) {
-        for(int i = 0; i < 11; ++i) {
-            answer[i] = lionInfo[i];
-        }
-    }
-    
-    boolean isUpdate(int[] lionInfo) {
-        for(int i = 10; i >= 0; --i) {
-            if(lionInfo[i] > answer[i]) {
+    private boolean isNewAnswer(int[] lion, int scoreDiff) {
+        if (scoreDiff > 0) {
+            if (scoreDiff > maxScoreDiff) {
                 return true;
-            } else if(lionInfo[i] < answer[i]) {
-                return false;
+            } else if (scoreDiff == maxScoreDiff) {
+                for (int i = 10; i >= 0; --i) {
+                    if (lion[i] > answer[i]) {
+                        return true;
+                    }
+                    if (lion[i] < answer[i]) {
+                        return false;
+                    }
+                }
             }
         }
         return false;
+    }
+    
+    private void updateAnswer(int[] lion, int scoreDiff) {
+        maxScoreDiff = scoreDiff;
+        for (int i = 0; i < lion.length; ++i) {
+            answer[i] = lion[i];
+        }
     }
 }
 
