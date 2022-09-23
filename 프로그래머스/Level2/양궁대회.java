@@ -81,24 +81,20 @@ class Solution {
 }
 
 /* 중복 조합 풀이 */
-import java.util.*;
-
 class Solution {
     
     private int[] apeach;
-    private int[] lion = new int[11];
-    
+    private int[] lion;
+    private int[] answer;
     private int maxScoreDiff = 0;
-    private int[] answer = new int[11];
     
     public int[] solution(int n, int[] info) {
         
-        apeach = info;
+        apeach = info.clone();
+        lion = new int[11];
+        answer = new int[11];
         
-        int N = n + 11 - 1;
-        int R = 11 - 1;
-        //11Hn -> n + 11 - 1 C 11 -1 (중복 순열)
-        getCombi(0, N, R, new ArrayList<Integer>());
+        duplicateCombi(n, 0, 0);
         
         if (maxScoreDiff == 0) {
             return new int[]{-1};
@@ -106,74 +102,56 @@ class Solution {
         return answer;
     }
     
-    private void getCombi(int idx, int N, int R, List<Integer> comb) {
-        if (comb.size() == R) {
-            //라이온 화살 조합 구하기
-            getLionArrow(comb, N);
-            
-            //점수 계산하기
-            int scoreDiff = getScoreDiff();
-            
-            //정답 구하기
-            updateAnswer(scoreDiff);
+    private void duplicateCombi(int n, int start, int depth) {
+        if (depth == n) {
+            updateAnswer();
             return;
         }
         
-        for (int i = idx; i < N; ++i) {
-            comb.add(i);
-            getCombi(i + 1, N, R, comb);
-            comb.remove(comb.size() - 1);
+        for (int i = start; i < 11; ++i) {
+            lion[i]++;
+            duplicateCombi(n, i, depth + 1);
+            lion[i]--;
         }
     }
     
-    private void getLionArrow(List<Integer> comb, int N) {
-        lion[0] = comb.get(0);
-        for (int i = 1; i < comb.size(); ++i) {
-            lion[i] = comb.get(i) - comb.get(i - 1) - 1;
+    private void updateAnswer() {
+        int score = getScore();
+        
+        boolean isNewAnswer = false;
+        if (score > maxScoreDiff) {
+            isNewAnswer = true;
+        } else if (score == maxScoreDiff) {
+            for (int i = 10; i >= 0; --i) {
+                if (lion[i] > answer[i]) {
+                    isNewAnswer = true;
+                    break;
+                } else if (lion[i] < answer[i]) {
+                    isNewAnswer = false;
+                    break;
+                }
+            }
         }
-        lion[10] = N - comb.get(comb.size() - 1) - 1;
+        
+        if (isNewAnswer) {
+            maxScoreDiff = score;
+            answer = lion.clone();
+        }
     }
     
-    private int getScoreDiff() {
-        int scoreDiff = 0;
+    private int getScore() {
+        int score = 0;
         for (int i = 0; i < 11; ++i) {
             if (lion[i] > apeach[i]) {
-                scoreDiff += 10 - i;
+                score += 10 - i;
             } else {
                 if (apeach[i] == 0) {
                     continue;
                 }
-                scoreDiff -= 10 - i;
+                score -= 10 - i;
             }
         }
-        return scoreDiff;
-    }
-    
-    private void updateAnswer(int scoreDiff) {
-        if (scoreDiff > maxScoreDiff) {
-            maxScoreDiff = scoreDiff;
-            for (int i = 0; i < 11; ++i) {
-                answer[i] = lion[i];
-            }
-        } else if (scoreDiff == maxScoreDiff) {
-                
-            boolean isAnswer = false;
-            for (int i = 10; i >= 0; --i) {
-                if (lion[i] > answer[i]) {
-                    isAnswer = true;
-                    break;
-                } else if (lion[i] < answer[i]) {
-                    isAnswer = false;
-                    break;
-                }
-            }
-                
-            if (isAnswer) {
-                for (int i = 0; i < 11; ++i) {
-                    answer[i] = lion[i];
-                }   
-            }
-        }
+        return score;
     }
 }
 
