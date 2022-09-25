@@ -1,24 +1,22 @@
 class Solution {
     public long[] solution(long[] numbers) {
-
         long[] answer = new long[numbers.length];
-
-        long f;
         for (int i = 0; i < numbers.length; ++i) {
-
+            long number = numbers[i];
+            
             long tmp = 1L;
-            while ((numbers[i] & tmp) == tmp) {
-                tmp = tmp << 1;
+            while ((number & tmp) != 0) {
+                tmp <<= 1;
             }
-
-            f = (numbers[i] | tmp);
-
-            tmp = (tmp >> 1);
-            tmp = (~tmp);
-            f = (f & tmp);
-
-            answer[i] = f;
+            
+            /* 가장 처음 나오는 0 -> 1 */
+            number |= tmp;
+            /* 0 오른쪽 1 -> 0 */
+            number &= ~(tmp >> 1);
+            
+            answer[i] = number;
         }
+        
         return answer;
     }
 }
