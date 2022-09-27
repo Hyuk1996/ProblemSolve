@@ -1,3 +1,4 @@
+/* dfs */
 class Solution {
     
     private char[] nameArr;
@@ -53,5 +54,30 @@ class Solution {
         nameArr[leftCursor] = 'A';
         dfs(depth + 1, moveCnt + leftCnt, leftCursor, maxDepth);
         nameArr[leftCursor] = leftPrev;
+    }
+}
+
+/* 가능한 경우의 수 구해 판단 (구현) */
+class Solution {
+    public int solution(String name) {
+        
+        int upDownCnt = 0;
+        for (char c : name.toCharArray()) {
+            upDownCnt += Math.min(c - 'A', 'Z' - c + 1);
+        }
+        
+        int minRightLeftCnt = name.length() - 1;
+        for (int i = 0; i < name.length(); ++i) {
+            int index = i + 1;
+            while (index < name.length() && name.charAt(index) == 'A') {
+                index++;
+            }
+            
+            minRightLeftCnt = Math.min(minRightLeftCnt, i * 2 + name.length() - index);
+            minRightLeftCnt = Math.min(minRightLeftCnt, (name.length() - index) * 2 + i);
+        }
+        
+        int answer = upDownCnt + minRightLeftCnt;
+        return answer;
     }
 }
