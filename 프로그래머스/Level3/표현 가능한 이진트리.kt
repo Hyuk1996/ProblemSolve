@@ -8,7 +8,7 @@ class Solution {
             val binary = convertToBinary(number)
             addPadding(binary)
 
-            if (canMakeBinaryTree(binary.toIntArray())) {
+            if (canMakeBinaryTree(binary.toIntArray(), 0, binary.size)) {
                 answers.add(1)
             } else {
                 answers.add(0)
@@ -18,27 +18,25 @@ class Solution {
         return answers.toIntArray()
     }
 
-    private fun canMakeBinaryTree(binary: IntArray): Boolean {
+    // [startIdx, endIdx)
+    private fun canMakeBinaryTree(binary: IntArray, startIdx: Int, endIdx: Int): Boolean {
         //base case
-        if (binary.size == 1) {
+        if (endIdx - startIdx == 1) {
             return true
         }
 
-        val middleIdx = binary.size / 2
+        val middleIdx = startIdx + ((endIdx - startIdx) / 2)
         val parent = binary[middleIdx]
 
-        val leftSubTree = binary.copyOfRange(0, middleIdx)
-        val rightSubTree = binary.copyOfRange(middleIdx + 1, binary.size)
-        val canMakeLeftSubTree = canMakeBinaryTree(leftSubTree)
-        val canMakeRightSubTree = canMakeBinaryTree(rightSubTree)
-
+        val canMakeLeftSubTree = canMakeBinaryTree(binary, startIdx, middleIdx)
+        val canMakeRightSubTree = canMakeBinaryTree(binary, middleIdx + 1, endIdx)
         if (!(canMakeLeftSubTree && canMakeRightSubTree)) {
             return false
         }
 
         if (parent == 0) {
-            val leftChild = leftSubTree[leftSubTree.size / 2]
-            val rightChild = rightSubTree[rightSubTree.size / 2]
+            val leftChild = binary[startIdx + (((endIdx - startIdx) / 2) / 2)]
+            val rightChild = binary[(middleIdx + 1) + (((endIdx - startIdx) / 2) / 2)]
             if (leftChild == 1 || rightChild == 1) {
                 return false
             }
