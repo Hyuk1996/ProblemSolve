@@ -1,3 +1,4 @@
+// DFS Solution
 class Solution {
     private val path: CharArray = charArrayOf('d', 'l', 'r', 'u')
     private val dr: IntArray = intArrayOf(1, 0, 0, -1)
@@ -54,3 +55,60 @@ class Solution {
         }
     }
 }
+
+// Math Solution
+class Solution {
+    fun solution(n: Int, m: Int, x: Int, y: Int, r: Int, c: Int, k: Int): String {
+
+        var countD = 0
+        var countL = 0
+        var countRL = 0
+        var countR = 0
+        var countU = 0
+
+        // 최적 경로 계산
+        if (x >= r) {
+            countU += (x - r)
+        } else {
+            countD += (r - x)
+        }
+
+        if (y >= c) {
+            countL += (y - c)
+        } else {
+            countR += (c - y)
+        }
+
+        var remain = k - (countD + countU + countL + countR)
+
+        if (remain < 0 || remain % 2 != 0) {
+            return "impossible"
+        }
+
+        // 위 아래 이동
+        var dist = minOf(remain / 2, n - (x + countD))
+        countD += dist
+        countU += dist
+        remain -= (dist * 2)
+
+        dist = minOf(remain / 2, (y - countL) - 1)
+        countL += dist
+        countR += dist
+        remain -= (dist * 2)
+
+        countRL += remain / 2
+
+        return makeAnswer(countD, countL, countRL, countR, countU)
+    }
+
+    fun makeAnswer(countD: Int, countL: Int, countRL: Int, countR: Int, countU: Int): String {
+        val sb = StringBuilder()
+        repeat(countD) { sb.append('d') }
+        repeat(countL) { sb.append('l') }
+        repeat(countRL) { sb.append("rl") }
+        repeat(countR) { sb.append('r') }
+        repeat(countU) { sb.append('u') }
+        return sb.toString()
+    }
+}
+
