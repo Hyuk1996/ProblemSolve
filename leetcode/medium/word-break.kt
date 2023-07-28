@@ -1,5 +1,42 @@
 /*
-Solution 1 : Dynamic Programming (Bottom-Up)
+Solution 1 : BFS
+Time Complexity : O(n^3 + mk) (n : length of s, m : length of wordDict, k : average length of the words in wordDict)
+(Detail : BFS -> O(n^3) + Convert to HashSet -> O(mk))
+Space Complexity : O(n + mk)
+*/
+class Solution {
+    fun wordBreak(s: String, wordDict: List<String>): Boolean {
+        // 1. convert wordDict to HashSet
+        val words = wordDict.toHashSet()
+
+        // 2. Init queue and visited array
+        val queue = ArrayDeque<Int>()
+        val visited = BooleanArray(s.length) { false }
+
+        // 4. start bfs
+        queue.add(0)
+        while (queue.isNotEmpty()) {
+            val start = queue.removeFirst()
+
+            if (start == s.length) {
+                return true
+            }
+
+            for (end in start + 1..s.length) {
+                if (!visited[end - 1] && words.contains(s.substring(start, end))) {
+                    visited[end - 1] = true
+                    queue.addLast(end)
+                }
+            }
+        }
+
+        // 5. if we can't reach last node than return false.
+        return false
+    }
+}
+
+/*
+Solution 2 : Dynamic Programming (Bottom-Up)
 Time Complexity : O(nm) (n: s.length, m: wordDict.length
 Space Complexity : O(n)
 */
@@ -22,7 +59,7 @@ class Solution {
 }
 
 /*
-Solution 2 : DFS + Memorization
+Solution 3 : DFS + Memorization
 Time Complexity : O(n^2) (n: s.length)
 Space Complexity : O(n^2)
 */
