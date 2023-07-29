@@ -36,7 +36,51 @@ class Solution {
 }
 
 /*
-Solution 2 : Dynamic Programming (Bottom-Up)
+Solution 2 : Dynamic Programming Top Down (DFS + Memorization)
+Time Complexity : O(nmk) (n : length of s, m : length of wordDict, k : average length of the wordsin wordDict)
+Space Complexity : O(n)
+*/
+private var n = 0
+private lateinit var memo: IntArray
+private lateinit var str: String
+private lateinit var words: List<String>
+
+class Solution {
+    fun wordBreak(s: String, wordDict: List<String>): Boolean {
+        str = s
+        words = wordDict
+        memo = IntArray(s.length) { -1 }
+        return isPossible(s.length - 1)
+    }
+
+    private fun isPossible(idx: Int): Boolean {
+        // base case
+        if (idx < 0) {
+            return true
+        }
+
+        if (memo[idx] != -1) {
+            return memo[idx] == 1
+        }
+
+        for (word in words) {
+            if (idx - word.length + 1 < 0) {
+                continue
+            }
+
+            if (str.substring(idx - word.length + 1, idx + 1) == word && isPossible(idx - word.length)) {
+                memo[idx] = 1
+                return true
+            }
+        }
+
+        memo[idx] = 0
+        return false
+    }
+}
+
+/*
+Solution 3 : Dynamic Programming (Bottom-Up)
 Time Complexity : O(nm) (n: s.length, m: wordDict.length
 Space Complexity : O(n)
 */
@@ -59,7 +103,7 @@ class Solution {
 }
 
 /*
-Solution 3 : DFS + Memorization
+Solution 4 : DFS + Memorization
 Time Complexity : O(n^2) (n: s.length)
 Space Complexity : O(n^2)
 */
