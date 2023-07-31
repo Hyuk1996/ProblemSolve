@@ -80,7 +80,35 @@ class Solution {
 }
 
 /*
-Solution 3 : Dynamic Programming (Bottom-Up)
+Solution 3 : Dynamic Programming Bottom Up
+Time Complexity : O(nmk) (n : length of s, m : length of wordDict, k : average length of the wordsin wordDict)
+Space Complexity : O(n)
+*/
+class Solution {
+    fun wordBreak(s: String, wordDict: List<String>): Boolean {
+        val dp = BooleanArray(s.length) { false }
+        
+        for (i in s.indices) {
+            for (word in wordDict) {
+                if (i < word.length - 1) {
+                    continue
+                }
+                
+                if (i == word.length - 1 || dp[i - word.length]) {
+                    if (s.substring(i - word.length + 1, i + 1) == word) {
+                        dp[i] = true
+                        break
+                    }
+                }
+            }
+        }
+        
+        return dp[s.length - 1]
+    }
+}
+
+/*
+Solution 4 : Dynamic Programming (Bottom-Up)
 Time Complexity : O(nm) (n: s.length, m: wordDict.length
 Space Complexity : O(n)
 */
@@ -103,7 +131,7 @@ class Solution {
 }
 
 /*
-Solution 4 : DFS + Memorization
+Solution 5 : DFS + Memorization
 Time Complexity : O(n^2) (n: s.length)
 Space Complexity : O(n^2)
 */
