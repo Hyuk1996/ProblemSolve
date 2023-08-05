@@ -108,6 +108,82 @@ class Solution {
 }
 
 /*
+Solution 3 - 2 : Optimize using trie data structer
+Time Complexity : O(n^2 + mk) (n : s.length, m : wordDict.length k : average length of the word in wordDict)
+*/
+class Solution {
+    fun wordBreak(s: String, wordDict: List<String>): Boolean {
+        val trie = Trie()
+        trie.addWords(wordDict)
+
+        val dp = BooleanArray(s.length) { false }
+        for (i in s.indices) {
+            if (i != 0 && !dp[i - 1]) {
+                continue
+            }
+
+            var curr = trie.getRootNode()
+            for (j in i until s.length) {
+                if (!curr.isChild(s[j])) {
+                    break
+                }
+
+                curr = curr.getChild(s[j])
+                if (curr.isLastChar()) {
+                    dp[j] = true
+                }
+            }
+        }
+
+        return dp[s.length - 1]
+    }
+}
+
+class Trie {
+
+    private val root = Node(value = ' ')
+
+    fun getRootNode() = root
+
+    fun addWords(words: List<String>) {
+        for (word in words) {
+            addWord(word)
+        }
+    }
+
+    private fun addWord(word: String) {
+        var cur = root
+        for (c in word.toCharArray()) {
+            if (!cur.isChild(c)) {
+                cur.insertChild(Node(value = c))
+            }
+            cur = cur.getChild(c)
+        }
+        cur.lastChar()
+    }
+
+    data class Node(
+        val childs: MutableMap<Char, Node> = mutableMapOf(),
+        val value: Char,
+        var isEnd: Boolean = false
+    ) {
+        fun isChild(value: Char) = childs.contains(value)
+
+        fun insertChild(child: Node) {
+            childs[child.value] = child
+        }
+
+        fun getChild(value: Char) = childs[value]!!
+
+        fun lastChar() {
+            isEnd = true
+        }
+
+        fun isLastChar() = isEnd
+    }
+}
+
+/*
 Solution 4 : Dynamic Programming (Bottom-Up)
 Time Complexity : O(nm) (n: s.length, m: wordDict.length
 Space Complexity : O(n)
